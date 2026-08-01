@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
 	import { toastStore } from '$lib/stores/toast.svelte';
+	import ConfirmDialog from './ConfirmDialog.svelte';
 
 	export type RideData = {
 		id: number;
@@ -54,7 +55,6 @@
 	});
 
 	// ── deriveds ─────────────────────────────────────────────────────────────
-	const canEditPrice = $derived(!fechaPago && !pending);
 	const origen = $derived(viaje.paradas[0]?.nombre ?? '—');
 	const destino = $derived(viaje.paradas[viaje.paradas.length - 1]?.nombre ?? '—');
 	const stops = $derived(viaje.paradas.slice(1, -1).map((p) => p.nombre));
@@ -98,9 +98,13 @@
 			: null
 	);
 
+	// A ride is actionable only while it's live: not paid, not queued offline,
+	// and not in the trash. Gates the price editor, the ••• menu and the sheet.
+	const actionable = $derived(!fechaPago && !pending && !viaje.borradoEn);
+
 	// ── actions ───────────────────────────────────────────────────────────────
 	function startEditPrice() {
-		if (!canEditPrice) return;
+		if (!actionable) return;
 		priceInput = localPriceUsd ?? '';
 		editingPrice = true;
 	}
@@ -150,16 +154,15 @@
 			const res = await fetch(`/api/viajes/${viaje.id}`, { method: 'DELETE' });
 			if (!res.ok) throw new Error();
 			toastStore.add('Carrera eliminada', 'success');
+			// Close explicitly rather than relying on the parent unmounting the card —
+			// a call site without onDeleted would otherwise leave the dialog spinning.
+			confirmingDelete = false;
 			onDeleted?.(viaje.id);
 		} catch {
 			toastStore.add('Error al eliminar la carrera', 'error');
+		} finally {
 			deleting = false;
 		}
-	}
-
-	async function confirmDelete() {
-		confirmingDelete = false;
-		deleteRide();
 	}
 
 	async function unpayRide() {
@@ -252,9 +255,9 @@
 						{#if precio}
 							<button
 								class="font-bold text-base"
-								class:cursor-default={!canEditPrice}
+								class:cursor-default={!actionable}
 								onclick={startEditPrice}
-								aria-label={canEditPrice ? 'Editar precio' : undefined}
+								aria-label={actionable ? 'Editar precio' : undefined}
 							>
 								{precio}
 							</button>
@@ -269,7 +272,7 @@
 						{/if}
 					</div>
 
-					{#if !fechaPago && !pending}
+					{#if actionable}
 						<button
 							class="btn btn-ghost btn-sm btn-circle text-base-content/70"
 							onclick={() => (menuOpen = true)}
@@ -305,21 +308,7 @@
 		{/if}
 
 		<!-- Footer -->
-		{#if confirmingDelete}
-			<div class="flex items-center gap-2 pt-2 border-t border-base-300">
-				<span class="text-xs text-error flex-1">¿Eliminar esta carrera?</span>
-				<button class="btn btn-ghost btn-xs" onclick={() => (confirmingDelete = false)} disabled={deleting}>
-					No
-				</button>
-				<button class="btn btn-error btn-xs" onclick={confirmDelete} disabled={deleting}>
-					{#if deleting}
-						<span class="loading loading-spinner loading-xs"></span>
-					{:else}
-						Sí, eliminar
-					{/if}
-				</button>
-			</div>
-		{:else if onRestore}
+		{#if onRestore}
 			<div class="flex items-center justify-between pt-2 border-t border-base-300">
 				<span class="text-xs text-base-content/30">Borrado {fechaBorrado}</span>
 				<button class="btn btn-warning btn-xs" onclick={restoreRide} disabled={restoring}>
@@ -370,7 +359,7 @@
 </div>
 
 <!-- Action sheet — kept at the component root, outside the card's own layout. -->
-{#if !fechaPago && !pending}
+{#if actionable}
 	<div class="modal modal-bottom" class:modal-open={menuOpen} role="dialog" aria-modal="true">
 		<div class="modal-box p-0">
 			<div class="px-5 pt-4 pb-3 text-center">
@@ -407,3 +396,15 @@
 		</div>
 	</div>
 {/if}
+
+<ConfirmDialog
+	bind:open={confirmingDelete}
+	title="¿Eliminar esta carrera?"
+	confirmLabel="Sí, eliminar"
+	confirmClass="btn-error"
+	busy={deleting}
+	onConfirm={deleteRide}
+>
+	Se eliminará <span class="font-semibold text-base-content">{origen} → {destino}</span>.
+	Podrás restaurarla desde la papelera en Historial.
+</ConfirmDialog>
