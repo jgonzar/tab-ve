@@ -40,6 +40,48 @@ Yummy Track App es una aplicación web ligera y optimizada para móvil que permi
 
 ---
 
+### 1.5 Diferido — campos retirados del formulario
+
+Dos campos especificados en este documento **ya no tienen input en la app**, pero siguen
+existiendo en la base de datos y en la API. Están diferidos, no eliminados.
+
+| Campo | Estado | Por qué |
+|---|---|---|
+| `conductor` | Retirado de formulario y de la tarjeta | Las 107 carreras registradas tienen `MC`. El campo nunca varió, así que mostrarlo y pedirlo era ruido puro. |
+| `clientes` ("Para quién") | Retirado del formulario | Agregaba fricción en cada registro. Toda carrera nueva se asigna a **JA + Marcela**, igual que ya hacía el atajo de rutas frecuentes. |
+
+**Qué NO cambió — a propósito:**
+
+- La tabla `viaje_clientes` y la columna `viajes.conductor_nombre` siguen intactas, con
+  todo el historial (71 carreras solo de JA, 36 compartidas). Nada se migró ni se borró.
+- La API sigue **aceptando** ambos campos en `POST` y `PUT /api/viajes`. Solo dejó de
+  recibirlos desde la UI.
+- Los chips de clientes se siguen mostrando en la tarjeta y en el recibo compartido.
+- Editar una carrera vieja **conserva** su asignación original de clientes; no la
+  reescribe al default compartido.
+
+Por eso, restaurarlos es trabajo de UI, no una migración.
+
+**Cuándo traerlos de vuelta:** si la app deja de ser de un solo hogar — más de un
+conductor, o clientes que no sean siempre los mismos dos. En ese momento
+`src/lib/rideDefaults.ts` deja de tener sentido y los campos vuelven al formulario.
+
+**Cómo:** el commit que los retiró está citado abajo; `git show <sha>` devuelve el markup
+y la validación exactos en vez de reescribirlos de memoria.
+
+> Commits de retiro:
+> - `7cdf065` — defaults compartidos, store y loads (`git show 7cdf065`)
+> - `fdf40ac` — inputs del formulario y línea de conductor en la tarjeta (`git show fdf40ac`)
+>
+> El retiro quedó repartido en dos commits porque `AddRideSheet` y `RideCard`
+> cambiaron también por otros motivos en la misma tanda.
+
+Las secciones 3.1, 4 y 5.4 de este documento siguen describiendo ambos campos tal como
+estaban especificados. Se dejan como están a propósito: son la especificación a la que
+volver, no una descripción del estado actual.
+
+---
+
 ## 2. Usuarios y Autenticación
 
 ### 2.1 Perfiles de Usuario
