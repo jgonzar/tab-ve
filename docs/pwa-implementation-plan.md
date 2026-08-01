@@ -296,6 +296,38 @@ Propongo enviar P1–P5 primero y tratar esto como su propio milestone si el esc
 
 ---
 
+### P7 — Pull-to-refresh propio
+**Por qué:** en modo standalone **iOS no tiene pull-to-refresh nativo** — ese gesto solo
+existe en Safari-navegador. Aparte, `app.css` ya traía `overscroll-behavior-y: contain`
+desde antes de este track, así que el gesto tampoco estaba disponible en el navegador. Para
+tenerlo en la app instalada hay que construirlo.
+
+**Qué se construye:** `src/lib/components/PullToRefresh.svelte`, montado en `+layout.svelte`
+envolviendo `{@render children()}`, así que aplica a Inicio y a Historial. Al soltar llama
+`invalidateAll()` — la misma vía que ya usan las seis mutaciones existentes.
+
+Dos decisiones que importan:
+
+- **Anima `height` de un espaciador, no `transform`.** Un ancestro con `transform` se
+  convierte en el bloque contenedor de los `position: fixed` descendientes, lo que habría
+  roto el FAB de Inicio (vive dentro de `<main>`). Con `transform` el botón se habría ido
+  al fondo del contenido en vez de quedarse pegado al viewport.
+- **Bloqueo de eje con umbral de 6px**, igual que el swipe de `RideCard`. Horizontal es del
+  card, hacia arriba es scroll normal, hacia abajo desde `scrollY === 0` es refresh. El
+  swipe del card ya cede en vertical sin `preventDefault`, así que ambos conviven.
+
+Se ignora el gesto dentro de `.modal` y `.drawer-side`, que hacen su propio scroll.
+
+**UAT (dispositivo):** desde arriba del todo en Inicio, deslizar hacia abajo muestra
+"Desliza para actualizar", pasando los 64px cambia a "Suelta para actualizar" y la flecha
+gira; al soltar aparece el spinner y la lista se recarga. El swipe horizontal de las
+tarjetas sigue funcionando igual. Con el bottom sheet abierto, deslizar dentro no dispara
+refresh.
+
+**Estado:** ✅ Código completo — UAT pendiente en dispositivo
+
+---
+
 ## Nota: localStorage en el contenedor standalone
 
 Análogo directo a la Fase 4 del playbook (que ahí era sobre cookies). **Una PWA instalada

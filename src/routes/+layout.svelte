@@ -6,6 +6,7 @@
 	import NavBar from '$lib/components/NavBar.svelte';
 	import Drawer from '$lib/components/Drawer.svelte';
 	import UserSelect from '$lib/components/UserSelect.svelte';
+	import PullToRefresh from '$lib/components/PullToRefresh.svelte';
 	import Toaster from '$lib/components/Toaster.svelte';
 
 	let { children } = $props();
@@ -27,7 +28,9 @@
 		<div class="drawer-content flex flex-col min-h-screen">
 			<NavBar />
 			<main class="flex-1 p-4 pwa-main-inset w-full max-w-lg mx-auto">
-				{@render children()}
+				<PullToRefresh>
+					{@render children()}
+				</PullToRefresh>
 			</main>
 		</div>
 
