@@ -2,7 +2,7 @@
 
 **Versión:** 1.0.0
 **Fecha:** 2026-08-01
-**Estado:** P1–P4 completos — P5 (deploy + UAT en dispositivo) es el siguiente paso
+**Estado:** P1–P4 completos, P5 desplegado — falta el UAT en iPhone
 **Base:** [pwa-playbook.md](./pwa-playbook.md), adaptado a este repo
 
 ---
@@ -255,7 +255,28 @@ la pestaña, y volver a agregar.
 "Yummy", sin barra de direcciones al abrir, la status bar tintada de `#191e24` sin franja
 de color distinto, y todo el UAT de P4.
 
-**Estado:** ⬜ Pendiente
+**Estado:** 🟡 Desplegado — **falta el UAT en dispositivo**
+
+Desplegado a producción el 2026-08-01. Alias: `https://yummy-tracker.vercel.app`.
+
+Verificado por curl contra el alias:
+- Los 7 assets responden 200; el manifest sale como `application/manifest+json`
+- Los 10 tags del head presentes en `/`
+- Los hrefs salen **absolutos** (`/icons/...`), no relativos, así que la advertencia del
+  playbook sobre rutas profundas no aplica aquí — confirmado contra una ruta de depth 3
+
+Lo que falta es exclusivamente lo que no se puede verificar por curl:
+
+- [ ] Borrar cualquier ícono viejo de Yummy Track de la pantalla de inicio **antes** de
+      re-agregar (es un snapshot y no toma el manifest nuevo)
+- [ ] Refrescar duro en Safari, cerrando y reabriendo la pestaña (su caché de favicons es
+      agresiva)
+- [ ] Agregar a pantalla de inicio → el ícono morado con el label "Yummy"
+- [ ] Abrir: sin barra de direcciones, status bar `#191e24` sin franja distinta
+- [ ] El FAB "+", el banner de offline y los botones del bottom sheet quedan por encima
+      del indicador de home
+- [ ] Scroll hasta abajo en Inicio: la última tarjeta se ve completa
+- [ ] No hay rebote de rubber-band al llegar a los extremos
 
 ---
 
