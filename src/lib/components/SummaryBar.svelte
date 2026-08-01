@@ -31,24 +31,34 @@
 
 	let confirming = $state(false);
 	let paying = $state(false);
-	let confirmTimer: ReturnType<typeof setTimeout> | null = null;
 
-	function startConfirm() {
+	function openConfirm() {
 		confirming = true;
-		confirmTimer = setTimeout(() => { confirming = false; }, 4000);
 	}
 
-	function cancelConfirm() {
-		if (confirmTimer) { clearTimeout(confirmTimer); confirmTimer = null; }
+	function closeConfirm() {
+		if (paying) return; // don't let it be dismissed mid-request
 		confirming = false;
 	}
 
 	async function confirm() {
-		cancelConfirm();
 		paying = true;
-		await onPayAll?.();
-		paying = false;
+		try {
+			await onPayAll?.();
+			confirming = false;
+		} finally {
+			paying = false;
+		}
 	}
+
+	$effect(() => {
+		if (!confirming) return;
+		function onKeydown(e: KeyboardEvent) {
+			if (e.key === 'Escape') closeConfirm();
+		}
+		document.addEventListener('keydown', onKeydown);
+		return () => document.removeEventListener('keydown', onKeydown);
+	});
 </script>
 
 <div class="card bg-base-200 shadow-sm sticky top-16 z-20 mb-4">
@@ -89,30 +99,60 @@
 				{/if}
 
 				{#if onPayAll}
-					{#if confirming}
-						<div class="flex items-center gap-2">
-							<span class="text-xs text-base-content/50">¿Marcar todas como pagadas?</span>
-							<button class="btn btn-ghost btn-xs" onclick={cancelConfirm} disabled={paying}>
-								No
-							</button>
-							<button class="btn btn-success btn-xs" onclick={confirm} disabled={paying}>
-								{#if paying}
-									<span class="loading loading-spinner loading-xs"></span>
-								{:else}
-									Sí, pagar todo
-								{/if}
-							</button>
-						</div>
-					{:else}
-						<button
-							class="btn btn-ghost btn-xs text-base-content/40"
-							onclick={startConfirm}
-						>
-							Marcar todo pagado
-						</button>
-					{/if}
+					<button class="btn btn-ghost btn-xs text-base-content/40" onclick={openConfirm}>
+						Marcar todo pagado
+					</button>
 				{/if}
 			</div>
 		{/if}
 	</div>
 </div>
+
+<!--
+	Sibling of the card, not a child: the card is `sticky z-20`, which opens a
+	stacking context. A modal nested inside it would paint at z-20 and end up
+	underneath the z-30 navbar, however high its own z-index is.
+-->
+{#if onPayAll}
+	<div class="modal" class:modal-open={confirming} role="dialog" aria-modal="true">
+		<div class="modal-box relative">
+			<button
+				class="btn btn-sm btn-circle btn-ghost absolute right-3 top-3"
+				onclick={closeConfirm}
+				disabled={paying}
+				aria-label="Cerrar"
+			>
+				<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+					<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+				</svg>
+			</button>
+
+			<h3 class="font-bold text-base pr-10">¿Marcar todas como pagadas?</h3>
+
+			<p class="pt-3 text-sm text-base-content/70">
+				Se marcarán <span class="font-semibold text-base-content">{count}</span>
+				{count === 1 ? 'carrera' : 'carreras'} por
+				<span class="font-semibold text-base-content tabular-nums">{totalUsdFmt}</span>
+				{#if totalVes}
+					<span class="text-base-content/50 tabular-nums">({totalVes})</span>
+				{/if}
+				como pagadas.
+			</p>
+
+			<div class="modal-action">
+				<button class="btn btn-ghost" onclick={closeConfirm} disabled={paying}>Cancelar</button>
+				<button class="btn btn-success" onclick={confirm} disabled={paying}>
+					{#if paying}
+						<span class="loading loading-spinner loading-sm"></span>
+					{:else}
+						Sí, pagar todo
+					{/if}
+				</button>
+			</div>
+		</div>
+
+		<div class="modal-backdrop" role="none">
+			<button type="button" onclick={closeConfirm} disabled={paying}>cerrar</button>
+		</div>
+	</div>
+{/if}
