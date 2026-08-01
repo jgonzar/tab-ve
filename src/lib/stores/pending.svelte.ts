@@ -6,7 +6,6 @@ export type PendingRide = {
 	localId: string;
 	creadoEn: string;
 	clienteIds: number[];
-	conductorNombre: string;
 	origenNombre: string;
 	paradaNombres: string[];
 	destinoNombre: string;
@@ -43,7 +42,6 @@ class PendingStore {
 			id: -parseInt(ride.localId.slice(-9)), // negative local ID, never collides with server
 			creadoEn: ride.creadoEn,
 			pagadoEn: null,
-			conductorNombre: ride.conductorNombre,
 			precioUsd: ride.precioUsd,
 			minutosEspera: ride.minutosEspera ?? null,
 			notas: ride.notas ?? null,

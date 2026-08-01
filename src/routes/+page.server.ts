@@ -41,7 +41,6 @@ export const load: PageServerLoad = async () => {
 		viajes: pendientes.map((v) => ({
 			id: v.id,
 			creadoEn: v.creadoEn,
-			conductorNombre: v.conductorNombre,
 			precioUsd: v.precioUsd,
 			minutosEspera: v.minutosEspera,
 			notas: v.notas,

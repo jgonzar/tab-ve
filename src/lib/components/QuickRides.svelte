@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { networkState } from '$lib/stores/network.svelte';
+	import { DEFAULT_CLIENT_IDS } from '$lib/rideDefaults';
 	import { pendingStore } from '$lib/stores/pending.svelte';
 	import { toastStore } from '$lib/stores/toast.svelte';
 
@@ -13,7 +14,6 @@
 		{ label: 'Rosalito → Fresco → El Limón',  origen: 'Rosalito',  paradas: ['Fresco Market'], destino: 'El Limón' }
 	];
 
-	const CLIENT_IDS = [1, 2]; // JA + Marcela
 
 	let { onCreated }: { onCreated?: () => void } = $props();
 
@@ -48,8 +48,7 @@
 		const paradaObjs = (route.paradas ?? []).map((n) => ({ id: null, nombre: n }));
 
 		const payload = {
-			clienteIds: CLIENT_IDS,
-			conductorNombre: 'MC',
+			clienteIds: DEFAULT_CLIENT_IDS,
 			origen: { id: null, nombre: route.origen },
 			paradas: paradaObjs,
 			destino: { id: null, nombre: route.destino },
@@ -62,8 +61,7 @@
 			pendingStore.add({
 				localId: Date.now().toString(),
 				creadoEn: new Date().toISOString(),
-				clienteIds: CLIENT_IDS,
-				conductorNombre: 'MC',
+				clienteIds: DEFAULT_CLIENT_IDS,
 				origenNombre: route.origen,
 				paradaNombres: route.paradas ?? [],
 				destinoNombre: route.destino,

@@ -40,7 +40,6 @@ export const load: PageServerLoad = async () => {
 			creadoEn: v.creadoEn,
 			pagadoEn: v.pagadoEn,
 			borradoEn: v.borradoEn,
-			conductorNombre: v.conductorNombre,
 			precioUsd: v.precioUsd,
 			minutosEspera: v.minutosEspera,
 			notas: v.notas,
