@@ -24,12 +24,16 @@
 	// to beat the package's baked-in colours.
 	const toasterOptions = {
 		duration: 5000,
-		fill: '#15191e',
+		// Lifted one ramp step ABOVE base-100 (#1d232a). DaisyUI's dark theme has
+		// no token lighter than the page, and surface-vs-surface contrast in a
+		// dark theme tops out ~1.4:1, so the separation comes from the drop
+		// shadow on [data-sileo-canvas] in app.css, not from this value alone.
+		fill: '#2b333b',
 		roundness: 16,
 		autopilot: true,
 		styles: {
 			title: 'font-semibold',
-			description: 'text-white/70!',
+			description: 'text-white/80!',
 			badge: 'bg-white/10!'
 		}
 	};
@@ -62,8 +66,8 @@
 		</div>
 	</div>
 
-	<!-- offset clears the sticky navbar, matching the old toast placement -->
-	<Toaster position="top-right" offset={{ top: '4.5rem' }} options={toasterOptions} />
+	<!-- offset clears the sticky navbar -->
+	<Toaster position="top-center" offset={{ top: '4.5rem' }} options={toasterOptions} />
 
 	<!-- Offline banner -->
 	{#if !networkState.online}

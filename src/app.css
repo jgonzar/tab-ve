@@ -76,6 +76,19 @@ body {
 	--sileo-state-info: var(--color-info);
 }
 
+/* The pill is an SVG path carrying an inline `filter: url(#gooey)` for the
+   morph, so it can't take a CSS border and its own filter can't be replaced.
+   Shadowing the parent wraps the already-rendered shape instead, which is what
+   actually separates it from the page — two dark surfaces can't do it alone.
+
+   Both shadows are deliberately offset-free: for top positions the package
+   flips the canvas with `transform: scaleY(-1)`, which would send a downward
+   offset upwards. Symmetric shadows render the same either way.
+   The hairline is a light edge highlight; the wide one is ambient depth. */
+[data-sileo-canvas] {
+	filter: drop-shadow(0 0 0.5px rgb(255 255 255 / 0.2)) drop-shadow(0 0 18px rgb(0 0 0 / 0.6));
+}
+
 /* Hide scrollbar while keeping scroll functionality */
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
