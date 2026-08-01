@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <!-- Chunkier, fewer elements: the 1024 route glyph turns to mush at 16-32px.
+       Solid fill, no gradient — gradients band badly at favicon sizes. -->
+  <rect width="512" height="512" fill="#7c5cff"/>
+
+  <!-- "Y" monogram, drawn as strokes so no font is involved. -->
+  <path d="M 148 132 L 256 272 L 364 132 M 256 272 L 256 392"
+        fill="none" stroke="#ffffff" stroke-width="76"
+        stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

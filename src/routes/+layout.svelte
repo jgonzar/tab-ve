@@ -26,7 +26,7 @@
 
 		<div class="drawer-content flex flex-col min-h-screen">
 			<NavBar />
-			<main class="flex-1 p-4 w-full max-w-lg mx-auto">
+			<main class="flex-1 p-4 pwa-main-inset w-full max-w-lg mx-auto">
 				{@render children()}
 			</main>
 		</div>
@@ -42,7 +42,7 @@
 	<!-- Offline banner -->
 	{#if !networkState.online}
 		<div
-			class="fixed bottom-0 inset-x-0 z-50 bg-warning text-warning-content text-center text-xs py-2 font-medium"
+			class="fixed bottom-0 inset-x-0 z-50 bg-warning text-warning-content text-center text-xs pt-2 pwa-offline-banner font-medium"
 		>
 			Sin conexión — las carreras se guardarán al reconectar
 		</div>

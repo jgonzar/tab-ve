@@ -409,7 +409,7 @@
 		</div>
 
 		<!-- Footer actions -->
-		<div class="px-4 py-3 border-t border-base-300 shrink-0 space-y-2">
+		<div class="px-4 pt-3 pwa-sheet-footer border-t border-base-300 shrink-0 space-y-2">
 		{#if validationSummary}
 			<p class="text-error text-sm">Faltan: {validationSummary}</p>
 		{:else if errors.submit}

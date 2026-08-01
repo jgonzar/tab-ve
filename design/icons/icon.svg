@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1024" y2="1024" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#8b6cff"/>
+      <stop offset="1" stop-color="#6a44f5"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Full-bleed purple field. iOS applies its own rounded-corner mask. -->
+  <rect width="1024" height="1024" fill="url(#bg)"/>
+
+  <!-- Route trail: origin -> destination -->
+  <path d="M 296 660 C 380 456, 560 424, 686 464"
+        fill="none" stroke="#ffffff" stroke-width="44"
+        stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- Origin ring -->
+  <circle cx="300" cy="720" r="52" fill="none" stroke="#ffffff" stroke-width="44"/>
+
+  <!-- Destination pin -->
+  <path d="M 700 512 C 660 430, 588 412, 588 330 A 112 112 0 1 1 812 330 C 812 412, 740 430, 700 512 Z"
+        fill="#ffffff"/>
+  <circle cx="700" cy="330" r="46" fill="#7657f8"/>
+</svg>

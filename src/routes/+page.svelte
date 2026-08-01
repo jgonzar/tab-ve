@@ -177,7 +177,7 @@
 		<p class="text-base-content/30 text-sm">No hay carreras pendientes</p>
 	</div>
 {:else}
-	<div class="space-y-3 pb-24">
+	<div class="space-y-3 pwa-list-inset">
 		{#each visibleViajes as viaje (viaje.id)}
 			<div
 				in:fly={mounted ? { y: 24, duration: 220, easing: cubicOut } : { duration: 0 }}
@@ -201,7 +201,7 @@
 
 <button
 	onclick={openCreate}
-	class="btn btn-primary btn-circle btn-lg fixed bottom-6 right-6 shadow-lg z-20"
+	class="btn btn-primary btn-circle btn-lg fixed pwa-fab right-6 shadow-lg z-20"
 	aria-label="Agregar carrera"
 >
 	<svg

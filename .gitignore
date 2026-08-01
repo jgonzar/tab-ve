@@ -6,3 +6,5 @@ build/
 .env.*
 !.env.example
 dist/
+.vercel
+.DS_Store

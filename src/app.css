@@ -8,9 +8,51 @@ a,
 	touch-action: manipulation;
 }
 
-/* Prevent pull-to-refresh / overscroll bounce on the main scroll container */
+/* ---------------------------------------------------------------------------
+   PWA / standalone mode
+   The app.html viewport carries `viewport-fit=cover`, which lets content run
+   under the notch and the home indicator. Everything below pays that back.
+   The `, 0px` fallbacks matter: these resolve to nothing in a browser tab and
+   on hardware without a home indicator.
+--------------------------------------------------------------------------- */
+:root {
+	--safe-bottom: env(safe-area-inset-bottom, 0px);
+	--safe-top: env(safe-area-inset-top, 0px);
+}
+
+/* Kill the rubber-band scroll that instantly reads as "this is a website" */
+html,
 body {
-	overscroll-behavior-y: contain;
+	overscroll-behavior-y: none;
+	-webkit-text-size-adjust: 100%;
+	-webkit-tap-highlight-color: transparent;
+}
+
+/* <main> — clears the home indicator on every route */
+.pwa-main-inset {
+	padding-bottom: calc(1rem + var(--safe-bottom));
+}
+
+/* Ride list on Inicio — also reserves room for the floating "+" button.
+   Must grow with the inset, or the last card is clipped. */
+.pwa-list-inset {
+	padding-bottom: calc(6rem + var(--safe-bottom));
+}
+
+/* Floating "+" button on Inicio */
+.pwa-fab {
+	bottom: calc(1.5rem + var(--safe-bottom));
+}
+
+/* Offline banner, pinned to the bottom edge */
+.pwa-offline-banner {
+	padding-bottom: calc(0.5rem + var(--safe-bottom));
+}
+
+/* Footer of the bottom sheet — DaisyUI's `modal-bottom` pins modal-box to the
+   viewport edge, so Guardar/Cancelar land right on the home indicator. */
+.pwa-sheet-footer {
+	padding-bottom: calc(0.75rem + var(--safe-bottom));
 }
 
 /* Momentum scrolling for any overflow-y containers (iOS Safari) */
