@@ -2,7 +2,7 @@
 	import { networkState } from '$lib/stores/network.svelte';
 	import { DEFAULT_CLIENT_IDS } from '$lib/rideDefaults';
 	import { pendingStore } from '$lib/stores/pending.svelte';
-	import { toastStore } from '$lib/stores/toast.svelte';
+	import { sileo } from 'svelte-sileo';
 
 	type QuickRoute = { label: string; origen: string; paradas?: string[]; destino: string };
 
@@ -68,7 +68,7 @@
 				precioUsd: '',
 				payload
 			});
-			toastStore.add('Carrera creada exitosamente', 'success');
+			sileo.success({ title: 'Carrera guardada', description: 'Se enviará cuando vuelva la conexión.' });
 			loading = null;
 			onCreated?.();
 			return;
@@ -81,10 +81,10 @@
 				body: JSON.stringify(payload)
 			});
 			if (!res.ok) throw new Error();
-			toastStore.add('Carrera creada exitosamente', 'success');
+			sileo.success({ title: 'Carrera creada', description: 'Agregada a pendientes.' });
 			onCreated?.();
 		} catch {
-			toastStore.add('Error al crear la carrera', 'error');
+			sileo.error({ title: 'No se pudo crear la carrera', description: 'Intenta de nuevo.' });
 		} finally {
 			loading = null;
 		}

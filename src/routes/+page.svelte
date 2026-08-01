@@ -4,7 +4,7 @@
 	import { fly } from 'svelte/transition';
 	import { cubicIn, cubicOut } from 'svelte/easing';
 	import { pendingStore } from '$lib/stores/pending.svelte';
-	import { toastStore } from '$lib/stores/toast.svelte';
+	import { sileo } from 'svelte-sileo';
 	import AddRideSheet from '$lib/components/AddRideSheet.svelte';
 	import RideCard, { type RideData } from '$lib/components/RideCard.svelte';
 	import SummaryBar from '$lib/components/SummaryBar.svelte';
@@ -90,10 +90,10 @@
 	async function handlePayAll() {
 		const res = await fetch('/api/viajes', { method: 'PATCH' });
 		if (!res.ok) {
-			toastStore.add('Error al marcar todas como pagadas', 'error');
+			sileo.error({ title: 'No se pudieron marcar todas', description: 'Intenta de nuevo.' });
 			return;
 		}
-		toastStore.add('Todas las carreras marcadas como pagadas', 'success');
+		sileo.success({ title: 'Todo pagado', description: 'Las carreras se movieron al historial.' });
 		hiddenIds = new Set();
 		await invalidateAll();
 	}
@@ -157,7 +157,7 @@
 			}
 		}
 		await navigator.clipboard.writeText(text);
-		toastStore.add('Resumen copiado al portapapeles', 'success');
+		sileo.success({ title: 'Resumen copiado', description: 'Pégalo donde quieras compartirlo.' });
 	}
 </script>
 

@@ -1,4 +1,4 @@
-<script module>
+<script module lang="ts">
 	let locationCache: { id: number; nombre: string }[] | null = null;
 </script>
 
@@ -7,7 +7,7 @@
 	import { DEFAULT_CLIENT_IDS } from '$lib/rideDefaults';
 	import { networkState } from '$lib/stores/network.svelte';
 	import { pendingStore, type PendingRide } from '$lib/stores/pending.svelte';
-	import { toastStore } from '$lib/stores/toast.svelte';
+	import { sileo } from 'svelte-sileo';
 	import LocationSelect, { type FormLocation } from './LocationSelect.svelte';
 	import LocationChips from './LocationChips.svelte';
 	import type { RideData } from './RideCard.svelte';
@@ -172,7 +172,7 @@
 		};
 		pendingStore.add(pending);
 		locationCache = null;
-		toastStore.add('Carrera creada exitosamente', 'success');
+		sileo.success({ title: 'Carrera guardada', description: 'Se enviará cuando vuelva la conexión.' });
 		close();
 		onSaved?.(pending);
 	}
@@ -208,7 +208,11 @@
 
 			const viaje = await res.json();
 			locationCache = null;
-			toastStore.add(editViaje ? 'Carrera actualizada' : 'Carrera creada exitosamente', 'success');
+			sileo.success(
+				editViaje
+					? { title: 'Carrera actualizada', description: 'Los cambios se guardaron.' }
+					: { title: 'Carrera creada', description: 'Agregada a pendientes.' }
+			);
 			close();
 			onSaved?.(viaje);
 		} catch (e) {

@@ -17,6 +17,9 @@ importers:
       drizzle-orm:
         specifier: ^0.40.0
         version: 0.40.1(@neondatabase/serverless@0.10.4)(@types/pg@8.11.6)
+      svelte-sileo:
+        specifier: ^1.2.0
+        version: 1.2.0(svelte@5.55.5)
     devDependencies:
       '@sveltejs/adapter-vercel':
         specifier: ^5.0.0
@@ -1436,6 +1439,11 @@ packages:
       svelte: ^4.0.0 || ^5.0.0-next.0
       typescript: '>=5.0.0'
 
+  svelte-sileo@1.2.0:
+    resolution: {integrity: sha512-e2kE+mIY6gWtTQy0rnFPdWdxSsHsPNARh5VU7b6EXAbNqZ+nuEdiJHs9zethOm8kSE/6+DD4HslxAeXi6VD6MA==}
+    peerDependencies:
+      svelte: ^5.0.0
+
   svelte@5.55.5:
     resolution: {integrity: sha512-2uCs/LZ9us+AktdzYJM8OcxQ8qnPS1kpaO7syGT/MgO+6Qr1Ybl+TqPq+97u7PHqmmMlye5ZkoyXONy5mjjAbw==}
     engines: {node: '>=18'}
@@ -2562,6 +2570,10 @@ snapshots:
       typescript: 5.9.3
     transitivePeerDependencies:
       - picomatch
+
+  svelte-sileo@1.2.0(svelte@5.55.5):
+    dependencies:
+      svelte: 5.55.5
 
   svelte@5.55.5:
     dependencies:

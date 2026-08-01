@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
-	import { toastStore } from '$lib/stores/toast.svelte';
+	import { sileo } from 'svelte-sileo';
 	import ConfirmDialog from './ConfirmDialog.svelte';
 
 	export type RideData = {
@@ -140,10 +140,10 @@
 		try {
 			const res = await fetch(`/api/viajes/${viaje.id}`, { method: 'PATCH' });
 			if (!res.ok) throw new Error();
-			toastStore.add('Carrera marcada como pagada', 'success');
+			sileo.success({ title: 'Carrera pagada', description: 'Movida al historial.' });
 			onPaid?.(viaje.id);
 		} catch {
-			toastStore.add('Error al marcar como pagada', 'error');
+			sileo.error({ title: 'No se pudo marcar como pagada', description: 'Intenta de nuevo.' });
 			paying = false;
 		}
 	}
@@ -153,13 +153,13 @@
 		try {
 			const res = await fetch(`/api/viajes/${viaje.id}`, { method: 'DELETE' });
 			if (!res.ok) throw new Error();
-			toastStore.add('Carrera eliminada', 'success');
+			sileo.success({ title: 'Carrera eliminada', description: 'Puedes restaurarla desde la papelera.' });
 			// Close explicitly rather than relying on the parent unmounting the card —
 			// a call site without onDeleted would otherwise leave the dialog spinning.
 			confirmingDelete = false;
 			onDeleted?.(viaje.id);
 		} catch {
-			toastStore.add('Error al eliminar la carrera', 'error');
+			sileo.error({ title: 'No se pudo eliminar', description: 'Intenta de nuevo.' });
 		} finally {
 			deleting = false;
 		}
@@ -174,10 +174,10 @@
 				body: JSON.stringify({ unpay: true })
 			});
 			if (!res.ok) throw new Error();
-			toastStore.add('Carrera devuelta a pendientes', 'success');
+			sileo.success({ title: 'Carrera devuelta a pendientes', description: 'Vuelve a aparecer en Inicio.' });
 			onUnpaid?.(viaje.id);
 		} catch {
-			toastStore.add('Error al devolver la carrera', 'error');
+			sileo.error({ title: 'No se pudo devolver', description: 'Intenta de nuevo.' });
 			unpaying = false;
 		}
 	}
@@ -191,10 +191,10 @@
 				body: JSON.stringify({ restore: true })
 			});
 			if (!res.ok) throw new Error();
-			toastStore.add('Carrera restaurada', 'success');
+			sileo.success({ title: 'Carrera restaurada', description: 'Vuelve a aparecer en Inicio.' });
 			onRestore?.(viaje.id);
 		} catch {
-			toastStore.add('Error al restaurar la carrera', 'error');
+			sileo.error({ title: 'No se pudo restaurar', description: 'Intenta de nuevo.' });
 			restoring = false;
 		}
 	}

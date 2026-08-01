@@ -30,7 +30,8 @@
   "dependencies": {
     "@neondatabase/serverless": "^0.10.0",
     "daisyui": "^5.0.0",
-    "drizzle-orm": "^0.40.0"
+    "drizzle-orm": "^0.40.0",
+    "svelte-sileo": "^1.2.0"
   },
   "pnpm": {
     "onlyBuiltDependencies": [

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { invalidateAll } from '$app/navigation';
-	import { toastStore } from '$lib/stores/toast.svelte';
+	import { sileo } from 'svelte-sileo';
 
 	let { children } = $props();
 
@@ -66,7 +66,7 @@
 		try {
 			await invalidateAll();
 		} catch {
-			toastStore.add('No se pudo actualizar', 'error');
+			sileo.error({ title: 'No se pudo actualizar', description: 'Revisa tu conexión e intenta de nuevo.' });
 		} finally {
 			refreshing = false;
 			pull = 0;

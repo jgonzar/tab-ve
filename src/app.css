@@ -60,6 +60,22 @@ body {
 	-webkit-overflow-scrolling: touch;
 }
 
+/* ---------------------------------------------------------------------------
+   Sileo toasts
+   Point the library's state colours at the DaisyUI theme tokens so the toast
+   icons and titles use the same green/red/amber as the rest of the app.
+
+   Set on [data-sileo-viewport] rather than :root on purpose — the package
+   defines these in its own :root block, and custom properties resolve from the
+   nearest ancestor that sets them, so this wins regardless of stylesheet order.
+--------------------------------------------------------------------------- */
+[data-sileo-viewport] {
+	--sileo-state-success: var(--color-success);
+	--sileo-state-error: var(--color-error);
+	--sileo-state-warning: var(--color-warning);
+	--sileo-state-info: var(--color-info);
+}
+
 /* Hide scrollbar while keeping scroll functionality */
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
