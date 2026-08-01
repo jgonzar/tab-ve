@@ -1,7 +1,7 @@
-# Yuumy Track App
+# Yummy Track App
 
 ## Overview
-Yuumy Track App is a mobile-first, offline-capable web application designed to track local rides in Venezuela. It enables a designated group of users to log rides, monitor pending payments, and view real-time USD to VES (Bolívares) conversions based on the official BCV rate.
+Yummy Track App is a mobile-first, offline-capable web application designed to track local rides in Venezuela. It enables a designated group of users to log rides, monitor pending payments, and view real-time USD to VES (Bolívares) conversions based on the official BCV rate.
 
 ## Core Features
 * **Ride Tracking:** Log start destinations, multi-stop routes, wait times, and total costs in USD.

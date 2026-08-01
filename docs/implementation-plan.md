@@ -1,4 +1,4 @@
-# Plan de Implementación — Yuumy Track App
+# Plan de Implementación — Yummy Track App
 
 **Versión:** 1.0.0  
 **Fecha:** 2026-05-12  

@@ -1,4 +1,4 @@
-# Documento de Requisitos del Producto — Yuumy Track App
+# Documento de Requisitos del Producto — Yummy Track App
 
 **Versión:** 0.2.0  
 **Fecha:** 2026-05-12  
@@ -11,11 +11,11 @@
 
 ### 1.1 Problema
 
-Yuumy es el servicio de transporte por aplicación predominante en Venezuela. JA y Marcela utilizan regularmente a una conductora de confianza, MC, para sus traslados. El seguimiento de las carreras, sus costos y el monto acumulado adeudado se hace actualmente rebuscando mensajes de chat, lo que resulta tedioso y propenso a errores. Los pagos se realizan en lotes, no por viaje, por lo que es fácil perder la cuenta.
+Yummy es el servicio de transporte por aplicación predominante en Venezuela. JA y Marcela utilizan regularmente a una conductora de confianza, MC, para sus traslados. El seguimiento de las carreras, sus costos y el monto acumulado adeudado se hace actualmente rebuscando mensajes de chat, lo que resulta tedioso y propenso a errores. Los pagos se realizan en lotes, no por viaje, por lo que es fácil perder la cuenta.
 
 ### 1.2 Solución
 
-Yuumy Track App es una aplicación web ligera y optimizada para móvil que permite registrar y dar seguimiento a los viajes de Yuumy. Muestra todos los viajes pendientes de pago en una sola pantalla, permite marcarlos como pagados y presenta los totales tanto en dólares (USD) como en bolívares venezolanos (usando la tasa BCV diaria).
+Yummy Track App es una aplicación web ligera y optimizada para móvil que permite registrar y dar seguimiento a los viajes de Yummy. Muestra todos los viajes pendientes de pago en una sola pantalla, permite marcarlos como pagados y presenta los totales tanto en dólares (USD) como en bolívares venezolanos (usando la tasa BCV diaria).
 
 ### 1.3 Objetivos (POC)
 
@@ -227,14 +227,14 @@ Las especificaciones detalladas de componentes se producirán en un documento se
 | Estilos base | Tailwind CSS v4 | Utilidades; excelente soporte de modo oscuro |
 | Componentes UI | DaisyUI (plugin Tailwind) | Biblioteca de componentes semánticos, themed, accesibles; cero costo |
 
-DaisyUI provee los componentes base (botones, tarjetas, drawers, badges, modales, toasts, etc.) con theming de modo oscuro nativo. Los colores y tokens de marca de Yuumy Track se definen sobre el tema oscuro de DaisyUI.
+DaisyUI provee los componentes base (botones, tarjetas, drawers, badges, modales, toasts, etc.) con theming de modo oscuro nativo. Los colores y tokens de marca de Yummy Track se definen sobre el tema oscuro de DaisyUI.
 
 ### 5.3 Estructura de Navegación
 
 ```
 Barra de navegación superior
 ├── Izquierda: Hamburguesa → Drawer lateral
-├── Centro:    "Yuumy Track" (nombre de la app)
+├── Centro:    "Yummy Track" (nombre de la app)
 └── Derecha:   Chip de avatar (iniciales del usuario) → Popover cambio de usuario
 
 Drawer lateral

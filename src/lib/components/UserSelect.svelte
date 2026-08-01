@@ -8,7 +8,7 @@
 
 <div class="fixed inset-0 z-50 bg-base-100 flex flex-col items-center justify-center p-8 gap-10">
 	<div class="text-center">
-		<h1 class="text-3xl font-bold tracking-tight">Yuumy Track</h1>
+		<h1 class="text-3xl font-bold tracking-tight">Yummy Track</h1>
 		<p class="text-base-content/50 mt-2 text-sm">Selecciona tu usuario para continuar</p>
 	</div>
 
