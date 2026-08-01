@@ -38,7 +38,8 @@
 		if (!axisLocked) {
 			if (Math.abs(dx) < 6 && Math.abs(dy) < 6) return; // wait for clear intent
 			axisLocked = true;
-			// Horizontal belongs to the ride card's swipe; upward is a normal scroll
+			// Upward is a normal scroll; horizontal belongs to whatever is under the
+			// finger (the quick-rides strip scrolls sideways)
 			if (dy <= 0 || Math.abs(dx) > Math.abs(dy)) {
 				tracking = false;
 				return;

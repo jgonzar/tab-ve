@@ -4,7 +4,7 @@
 
 <script lang="ts">
 	import { untrack } from 'svelte';
-	import { USERS } from '$lib/stores/user.svelte';
+	import { DEFAULT_CLIENT_IDS } from '$lib/rideDefaults';
 	import { networkState } from '$lib/stores/network.svelte';
 	import { pendingStore, type PendingRide } from '$lib/stores/pending.svelte';
 	import { toastStore } from '$lib/stores/toast.svelte';
@@ -24,10 +24,10 @@
 		onSaved?: (viaje: unknown) => void;
 	} = $props();
 
-	const CLIENTES = USERS.filter((u) => u.rol === 'cliente');
-
-	let clienteIds = $state<number[]>([]);
-	let conductorNombre = $state('MC');
+	// No longer collected in the form — see $lib/rideDefaults. Kept in state so an
+	// edit preserves whatever the ride was originally assigned, rather than
+	// silently rewriting older JA-only rides to the shared default.
+	let clienteIds = $state<number[]>([...DEFAULT_CLIENT_IDS]);
 	let origen = $state<FormLocation | null>(null);
 	let paradas = $state<StopItem[]>([]);
 	let destino = $state<FormLocation | null>(null);
@@ -78,7 +78,6 @@
 
 	function populateFromEdit(v: RideData) {
 		clienteIds = v.clientes.map((c) => c.id);
-		conductorNombre = v.conductorNombre;
 		origen = v.paradas[0] ?? null;
 		paradas = v.paradas
 			.slice(1, -1)
@@ -92,10 +91,6 @@
 		formKey++;
 	}
 
-	function toggleCliente(id: number) {
-		clienteIds = clienteIds.includes(id) ? clienteIds.filter((c) => c !== id) : [...clienteIds, id];
-	}
-
 	function addParada() {
 		paradas = [...paradas, { key: stopCounter++, location: null }];
 	}
@@ -105,8 +100,7 @@
 	}
 
 	function resetForm() {
-		clienteIds = [];
-		conductorNombre = 'MC';
+		clienteIds = [...DEFAULT_CLIENT_IDS];
 		origen = null;
 		paradas = [];
 		destino = null;
@@ -124,7 +118,6 @@
 	}
 
 	const FIELD_LABELS: Record<string, string> = {
-		clientes: 'Para quién',
 		origen: 'Origen',
 		destino: 'Destino',
 		paradas: 'Paradas',
@@ -140,7 +133,6 @@
 
 	function validate(): boolean {
 		const e: Record<string, string> = {};
-		if (clienteIds.length === 0) e.clientes = 'Selecciona al menos un cliente';
 		if (!origen) e.origen = 'Requerido';
 		if (!destino) e.destino = 'Requerido';
 		const normalizedPrecio = normalizePrecio(precioUsd);
@@ -155,7 +147,6 @@
 		const normalizedPrecio = normalizePrecio(precioUsd);
 		return {
 			clienteIds,
-			conductorNombre,
 			origen,
 			paradas: paradas.map((p) => p.location),
 			destino,
@@ -171,7 +162,6 @@
 			localId: Date.now().toString(),
 			creadoEn: new Date().toISOString(),
 			clienteIds,
-			conductorNombre,
 			origenNombre: origen!.nombre,
 			paradaNombres: paradas.map((p) => p.location!.nombre),
 			destinoNombre: destino!.nombre,
@@ -239,69 +229,42 @@
 	<div class="modal-box max-h-[92vh] flex flex-col p-0">
 		<!-- Header -->
 		<div class="flex items-center justify-between px-4 py-3 border-b border-base-300 shrink-0">
-			<h3 class="font-bold text-base">{editViaje ? 'Editar Carrera' : 'Nueva Carrera'}</h3>
+			<h3 class="font-bold text-lg">{editViaje ? 'Editar Carrera' : 'Nueva Carrera'}</h3>
 			<button
 				type="button"
 				onclick={close}
-				class="btn btn-ghost btn-sm btn-circle"
+				class="btn btn-circle bg-base-300 border-none text-base-content hover:bg-base-100"
 				aria-label="Cerrar"
 			>
-				✕
+				<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+					<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+				</svg>
 			</button>
 		</div>
 
 		<!-- Scrollable form body -->
 		<div class="overflow-y-auto flex-1 px-4 py-4 space-y-5">
 			{#key formKey}
-				<!-- Clientes -->
-				<div class="space-y-1">
-					<label class="text-sm font-medium text-base-content/70">Para quién</label>
-					<div class="flex gap-2">
-						{#each CLIENTES as cliente}
-							<button
-								type="button"
-								onclick={() => toggleCliente(cliente.id)}
-								class="badge badge-lg gap-1 cursor-pointer transition-colors"
-								class:badge-primary={clienteIds.includes(cliente.id)}
-								class:badge-outline={!clienteIds.includes(cliente.id)}
-							>
-								{cliente.nombre}
-							</button>
-						{/each}
-					</div>
-					{#if errors.clientes}
-						<p class="text-error text-xs">{errors.clientes}</p>
-					{/if}
-				</div>
-
-				<!-- Conductor -->
-				<div class="space-y-1">
-					<label class="text-sm font-medium text-base-content/70">Conductor</label>
-					<input
-						type="text"
-						bind:value={conductorNombre}
-						class="input input-bordered w-full"
-						placeholder="MC"
-					/>
-				</div>
-
 				<!-- Ruta -->
 				<div class="space-y-2">
-					<label class="text-sm font-medium text-base-content/70">Ruta</label>
+					<label class="text-base font-semibold text-base-content/80">Ruta</label>
 
 					<div class="space-y-1">
-						<span class="text-xs text-base-content/50">Origen</span>
+						<span class="text-sm text-base-content/60">Origen</span>
 						<LocationSelect bind:value={origen} {locations} placeholder="¿Desde dónde?" />
 						<LocationChips value={origen} onSelect={(loc) => (origen = loc)} />
 						{#if errors.origen}
-							<p class="text-error text-xs">{errors.origen}</p>
+							<p class="text-error text-sm">{errors.origen}</p>
 						{/if}
 					</div>
 
 					{#each paradas as parada (parada.key)}
 						<div class="flex gap-2 items-start">
-							<div class="flex-1 space-y-1">
-								<span class="text-xs text-base-content/50">Parada</span>
+							<!-- min-w-0: a flex child defaults to min-width:auto, so the chips row's
+							     intrinsic width would push this column past the sheet and scroll the
+							     whole form sideways instead of just the chips. -->
+							<div class="flex-1 min-w-0 space-y-1">
+								<span class="text-sm text-base-content/60">Parada</span>
 								<LocationSelect
 									bind:value={parada.location}
 									{locations}
@@ -312,58 +275,60 @@
 							<button
 								type="button"
 								onclick={() => removeParada(parada.key)}
-								class="btn btn-ghost btn-sm btn-circle mt-6"
+								class="btn btn-circle shrink-0 mt-7 bg-base-300 border-none text-error hover:bg-error hover:text-error-content"
 								aria-label="Eliminar parada"
 							>
-								✕
+								<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+									<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+								</svg>
 							</button>
 						</div>
 					{/each}
 
 					{#if errors.paradas}
-						<p class="text-error text-xs">{errors.paradas}</p>
+						<p class="text-error text-sm">{errors.paradas}</p>
 					{/if}
 
 					<button
 						type="button"
 						onclick={addParada}
-						class="btn btn-ghost btn-xs text-base-content/50 pl-0"
+						class="btn btn-ghost btn-sm h-10 text-sm text-base-content/60 px-2 -ml-2"
 					>
 						+ Agregar parada
 					</button>
 
 					<div class="space-y-1">
-						<span class="text-xs text-base-content/50">Destino</span>
+						<span class="text-sm text-base-content/60">Destino</span>
 						<LocationSelect bind:value={destino} {locations} placeholder="¿A dónde?" />
 						<LocationChips value={destino} onSelect={(loc) => (destino = loc)} />
 						{#if errors.destino}
-							<p class="text-error text-xs">{errors.destino}</p>
+							<p class="text-error text-sm">{errors.destino}</p>
 						{/if}
 					</div>
 				</div>
 
 				<!-- Precio -->
 				<div class="space-y-1">
-					<label class="text-sm font-medium text-base-content/70">Precio</label>
+					<label class="text-base font-semibold text-base-content/80">Precio</label>
 					<div class="relative">
-						<span class="absolute left-3 top-1/2 -translate-y-1/2 text-base-content/50 text-sm">$</span>
+						<span class="absolute left-3 top-1/2 -translate-y-1/2 text-base-content/50 text-base">$</span>
 						<input
 							type="text"
 							bind:value={precioUsd}
 							inputmode="decimal"
 							pattern="^\d*\.?\d*$"
 							placeholder="0.00"
-							class="input input-bordered w-full pl-7"
+							class="input input-bordered input-lg w-full pl-8"
 						/>
 					</div>
 					{#if errors.precio}
-						<p class="text-error text-xs">{errors.precio}</p>
+						<p class="text-error text-sm">{errors.precio}</p>
 					{/if}
 				</div>
 
 				<!-- Espera (opcional) -->
 				<div class="space-y-1">
-					<label class="text-sm font-medium text-base-content/70">
+					<label class="text-base font-semibold text-base-content/80">
 						Tiempo de espera
 						<span class="text-base-content/40 font-normal">(opcional)</span>
 					</label>
@@ -374,15 +339,15 @@
 							min="0"
 							inputmode="numeric"
 							placeholder="0"
-							class="input input-bordered w-full pr-14"
+							class="input input-bordered input-lg w-full pr-16"
 						/>
-						<span class="absolute right-3 top-1/2 -translate-y-1/2 text-base-content/40 text-sm">min</span>
+						<span class="absolute right-3 top-1/2 -translate-y-1/2 text-base-content/40 text-base">min</span>
 					</div>
 				</div>
 
 				<!-- Notas (opcional) -->
 				<div class="space-y-1">
-					<label class="text-sm font-medium text-base-content/70">
+					<label class="text-base font-semibold text-base-content/80">
 						Notas
 						<span class="text-base-content/40 font-normal">(opcional)</span>
 					</label>
@@ -390,18 +355,18 @@
 						bind:value={notas}
 						rows="2"
 						placeholder="Algún detalle del viaje..."
-						class="textarea textarea-bordered w-full resize-none"
+						class="textarea textarea-bordered textarea-lg w-full resize-none"
 					></textarea>
 				</div>
 
 				<!-- Fecha -->
 				<div class="space-y-1">
-					<label for="fecha-viaje" class="text-sm font-medium text-base-content/70">Fecha</label>
+					<label for="fecha-viaje" class="text-base font-semibold text-base-content/80">Fecha</label>
 					<input
 						id="fecha-viaje"
 						type="date"
 						bind:value={fechaViaje}
-						class="input input-bordered w-full"
+						class="input input-bordered input-lg w-full"
 					/>
 				</div>
 			{/key}

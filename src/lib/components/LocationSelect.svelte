@@ -60,7 +60,7 @@
 		onblur={onBlur}
 		{placeholder}
 		autocomplete="off"
-		class="input input-bordered w-full"
+		class="input input-bordered input-lg w-full"
 		class:input-error={value === null && inputValue.length > 0 && !open}
 	/>
 
@@ -72,7 +72,7 @@
 						type="button"
 						onmousedown={(e) => e.preventDefault()}
 						onclick={() => select(loc)}
-						class="w-full text-left px-4 py-3 hover:bg-base-300 active:bg-base-300 text-sm"
+						class="w-full text-left px-4 py-3.5 hover:bg-base-300 active:bg-base-300 text-base"
 					>
 						{loc.nombre}
 					</button>
@@ -84,7 +84,7 @@
 						type="button"
 						onmousedown={(e) => e.preventDefault()}
 						onclick={createNew}
-						class="w-full text-left px-4 py-3 hover:bg-base-300 text-sm text-primary font-medium"
+						class="w-full text-left px-4 py-3.5 hover:bg-base-300 text-base text-primary font-medium"
 					>
 						+ Crear "{inputValue.trim()}"
 					</button>

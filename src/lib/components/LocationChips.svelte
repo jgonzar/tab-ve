@@ -12,11 +12,11 @@
 	} = $props();
 </script>
 
-<div class="flex gap-1.5 overflow-x-auto no-scrollbar pt-1">
+<div class="flex gap-2 overflow-x-auto no-scrollbar pt-2 pb-1">
 	{#each QUICK_LOCATIONS as nombre}
 		<button
 			type="button"
-			class="badge badge-sm shrink-0 cursor-pointer transition-colors"
+			class="badge badge-lg min-h-10 px-4 shrink-0 cursor-pointer transition-colors"
 			class:badge-primary={value?.nombre === nombre}
 			class:badge-outline={value?.nombre !== nombre}
 			onclick={() => onSelect({ id: null, nombre })}

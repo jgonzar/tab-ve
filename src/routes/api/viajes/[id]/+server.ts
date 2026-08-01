@@ -36,6 +36,17 @@ export const PATCH: RequestHandler = async ({ params, request }) => {
 		return json(updated);
 	}
 
+	// Undo a payment — the ride goes back to pending
+	if (body?.unpay === true) {
+		const [updated] = await db
+			.update(viajes)
+			.set({ pagadoEn: null })
+			.where(eq(viajes.id, id))
+			.returning();
+		if (!updated) error(404, 'Carrera no encontrada');
+		return json(updated);
+	}
+
 	// Price update
 	if (body?.precioUsd !== undefined) {
 		const val = parseFloat(body.precioUsd);
