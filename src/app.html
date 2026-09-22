@@ -19,6 +19,26 @@
 		     that sits against the status bar in standalone. -->
 		<meta name="theme-color" content="#191e24" />
 
+		<!-- Link previews.
+		     Absolute URLs on purpose: scrapers do not resolve relative paths, and
+		     og:url is the canonical, so preview deploys advertise production too.
+		     Copy is English while the app itself stays Spanish, because the people
+		     who follow a shared link are not the people who use the app.
+		     og:locale is omitted deliberately: it defaults to en_US, which matches
+		     the copy below, and es_VE would contradict it.
+		     Image is static/og.png, 1200x630, from design/og.svg. The dimension
+		     hints let a scraper lay out the card without fetching the file. -->
+		<meta property="og:type" content="website" />
+		<meta property="og:url" content="https://yummy-tracker.vercel.app/" />
+		<meta property="og:site_name" content="Yummy Track" />
+		<meta property="og:title" content="Yummy Track" />
+		<meta property="og:description" content="Offline-first ride payment tracker with live BCV exchange-rate conversion." />
+		<meta property="og:image" content="https://yummy-tracker.vercel.app/og.png" />
+		<meta property="og:image:width" content="1200" />
+		<meta property="og:image:height" content="630" />
+		<meta property="og:image:alt" content="Yummy Track: offline-first ride payment tracking with live BCV rate conversion" />
+		<meta name="twitter:card" content="summary_large_image" />
+
 		%sveltekit.head%
 	</head>
 	<body data-sveltekit-preload-data="hover">
