@@ -1,36 +1,43 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
   <!--
-    Open Graph card — 1200x630, the size summary_large_image expects.
+    Open Graph card, 1200x630, the size summary_large_image expects.
 
-    Archival master for static/og.png. Everything here is lifted from
-    design/icons/icon.svg on purpose: same gradient stops, same glyph
-    geometry in the same 1024 coordinate space, so the share card and the
-    home-screen icon are visibly the same mark.
+    Archival master for static/og.png. The tile gradient and the glyph
+    geometry are lifted from design/icons/icon.svg on purpose, same stops
+    and same 1024 coordinate space, so the share card and the home-screen
+    icon read as one mark.
 
     Ground is #1d232a, the base-100 token, i.e. the app's own page colour,
     rather than a full purple field. A 1200x630 purple slab just reads as a
-    blown-up icon; the dark ground lets the tile stay the accent and keeps
-    the card looking like the product.
+    blown-up icon; the dark ground keeps the tile as the accent.
+
+    Type is Avenir Next. Two findings worth keeping, both verified by
+    rasterising probe strips rather than assumed:
+
+      * SF Pro is NOT addressable through sips. "SF Pro Display", "SF Pro",
+        "-apple-system", "system-ui", "SFProDisplay-Bold", ".SFNS-Bold" and
+        ".AppleSystemUIFont" all fall back to the same non-bold default and
+        silently ignore font-weight. Do not reach for it again.
+      * Only the bare family name plus a numeric font-weight resolves.
+        "Avenir Next Demi Bold" renders at regular weight.
+
+    Avenir Next is appreciably wider than Helvetica Neue, roughly 7.2 units
+    of advance per unit of font-size at weight 700 against about 5.7. The
+    88px wordmark had to come down to 84 to keep clearance from the tile.
+
+    No <filter> anywhere: sips rasterises gradients reliably, blur support
+    is not worth betting the build on.
 
     Note: XML comments cannot contain a double hyphen, so token names are
     written without their CSS custom-property prefix. sips reports exit 0
     and prints an output path even when the parse fails, so always verify
     the real pixel dimensions after rasterising.
-
-    No <filter> anywhere: sips rasterises gradients reliably but blur support
-    is not worth betting the build on. The glow is a radialGradient fill.
   -->
   <defs>
     <linearGradient id="tile" x1="0" y1="0" x2="300" y2="300" gradientUnits="userSpaceOnUse">
       <stop offset="0" stop-color="#8b6cff"/>
       <stop offset="1" stop-color="#6a44f5"/>
     </linearGradient>
-
-    <radialGradient id="glow" cx="940" cy="315" r="340" gradientUnits="userSpaceOnUse">
-      <stop offset="0"    stop-color="#8b6cff" stop-opacity="0.30"/>
-      <stop offset="0.55" stop-color="#8b6cff" stop-opacity="0.10"/>
-      <stop offset="1"    stop-color="#8b6cff" stop-opacity="0"/>
-    </radialGradient>
 
     <linearGradient id="hairline" x1="0" y1="0" x2="1200" y2="0" gradientUnits="userSpaceOnUse">
       <stop offset="0"   stop-color="#8b6cff" stop-opacity="0.55"/>
@@ -48,9 +55,6 @@
   <!-- Ground -->
   <rect width="1200" height="630" fill="#1d232a"/>
 
-  <!-- Ambient glow behind the tile -->
-  <ellipse cx="940" cy="315" rx="340" ry="320" fill="url(#glow)"/>
-
   <!--
     Background echo of the route curve. The square icon has to cram this
     shape; 1200x630 is the one canvas where it can actually run, so the
@@ -64,22 +68,22 @@
 
   <!-- ── Left column ─────────────────────────────────────────────────── -->
   <text x="96" y="262"
-        font-family="Helvetica Neue, Helvetica, Arial, sans-serif"
-        font-size="88" font-weight="700" fill="#ffffff"
+        font-family="Avenir Next, Avenir, Helvetica Neue, Helvetica, Arial, sans-serif"
+        font-size="84" font-weight="700" fill="#ffffff"
         letter-spacing="-1.5">Yummy Track</text>
 
   <text x="96" y="324"
-        font-family="Helvetica Neue, Helvetica, Arial, sans-serif"
+        font-family="Avenir Next, Avenir, Helvetica Neue, Helvetica, Arial, sans-serif"
         font-size="30" font-weight="400" fill="#9aa4b2">Offline-first ride payment tracking,</text>
 
   <text x="96" y="366"
-        font-family="Helvetica Neue, Helvetica, Arial, sans-serif"
+        font-family="Avenir Next, Avenir, Helvetica Neue, Helvetica, Arial, sans-serif"
         font-size="30" font-weight="400" fill="#9aa4b2">with live BCV rate conversion.</text>
 
   <text x="97" y="438"
-        font-family="Helvetica Neue, Helvetica, Arial, sans-serif"
+        font-family="Avenir Next, Avenir, Helvetica Neue, Helvetica, Arial, sans-serif"
         font-size="20" font-weight="600" fill="#7c6bd4"
-        letter-spacing="2.6">SVELTEKIT  ·  DRIZZLE  ·  POSTGRES  ·  PWA</text>
+        letter-spacing="2.2">SVELTEKIT  ·  DRIZZLE  ·  POSTGRES  ·  PWA</text>
 
   <!-- ── Icon tile ───────────────────────────────────────────────────── -->
   <g transform="translate(790 165)">
