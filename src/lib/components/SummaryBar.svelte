@@ -50,14 +50,14 @@
 	<div class="card-body p-4 py-3">
 		<div class="flex items-center justify-around">
 			<div class="text-center">
-				<p class="text-2xl font-bold tabular-nums">{count}</p>
+				<p class="text-2xl font-bold">{count}</p>
 				<p class="text-xs text-base-content/40 uppercase tracking-wide">Pendientes</p>
 			</div>
 			<div class="w-px h-8 bg-base-300"></div>
 			<div class="text-center">
-				<p class="text-2xl font-bold tabular-nums">{totalUsdFmt}</p>
+				<p class="text-2xl font-bold">{totalUsdFmt}</p>
 				{#if totalVes}
-					<p class="text-sm tabular-nums text-base-content/50">{totalVes}</p>
+					<p class="text-sm text-base-content/50">{totalVes}</p>
 				{/if}
 				<p class="text-xs text-base-content/40 uppercase tracking-wide">Total</p>
 				{#if stale}
@@ -109,9 +109,9 @@
 	>
 		Se marcarán <span class="font-semibold text-base-content">{count}</span>
 		{count === 1 ? 'carrera' : 'carreras'} por
-		<span class="font-semibold text-base-content tabular-nums">{totalUsdFmt}</span>
+		<span class="font-semibold text-base-content">{totalUsdFmt}</span>
 		{#if totalVes}
-			<span class="text-base-content/50 tabular-nums">({totalVes})</span>
+			<span class="text-base-content/50">({totalVes})</span>
 		{/if}
 		como pagadas.
 	</ConfirmDialog>

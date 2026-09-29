@@ -1,5 +1,75 @@
 @import "tailwindcss";
-@plugin "daisyui";
+
+/* Poppins, self-hosted. Latin subset only (it covers every Spanish character),
+   and only the weights the app sets: 400/500/600/700, plus 400 italic for
+   notes. Nothing below 400. The files carry `font-display: swap` and are
+   preloaded from hooks.server.ts. */
+@import "@fontsource/poppins/latin-400.css";
+@import "@fontsource/poppins/latin-400-italic.css";
+@import "@fontsource/poppins/latin-500.css";
+@import "@fontsource/poppins/latin-600.css";
+@import "@fontsource/poppins/latin-700.css";
+
+/* No stock themes: `tab` below is the only one, so nothing else ships. */
+@plugin "daisyui" {
+	themes: false;
+}
+
+/* ---------------------------------------------------------------------------
+   Tab theme (dark)
+   Neutrals are derived from the brand Indigo's hue. The roles match the light
+   theme, so components never need to know which one is active:
+     base-100  page
+     base-200  raised: cards, navbar, sheets. Lighter than the page here.
+     base-300  deepest surface step: borders, inputs, pressed rows, toasts
+   `neutral` is DaisyUI's pressed/active fill (menu rows), so it takes base-300.
+   `secondary` is unused and mirrors primary, so a stray class stays on-brand.
+   Shape tokens are DaisyUI's stock dark values: only the colours change.
+--------------------------------------------------------------------------- */
+@plugin "daisyui/theme" {
+	name: "tab";
+	default: true;
+	prefersdark: false;
+	color-scheme: dark;
+
+	--color-base-100: #0b0a29;
+	--color-base-200: #13113f;
+	--color-base-300: #1f1b62;
+	--color-base-content: #f8f8f8;
+	--color-primary: #4342f5;
+	--color-primary-content: #f8f8f8;
+	--color-secondary: #4342f5;
+	--color-secondary-content: #f8f8f8;
+	--color-accent: #d7fe65;
+	--color-accent-content: #0b0a29;
+	--color-neutral: #1f1b62;
+	--color-neutral-content: #f8f8f8;
+	--color-info: #97a1ff;
+	--color-info-content: #0b0a29;
+	--color-success: #d7fe65;
+	--color-success-content: #0b0a29;
+	--color-warning: #f6d56b;
+	--color-warning-content: #0b0a29;
+	--color-error: #f66b71;
+	--color-error-content: #0b0a29;
+
+	--radius-selector: 0.5rem;
+	--radius-field: 0.25rem;
+	--radius-box: 0.5rem;
+	--size-selector: 0.25rem;
+	--size-field: 0.25rem;
+	--border: 1px;
+	--depth: 1;
+	--noise: 0;
+}
+
+@theme {
+	--font-sans: 'Poppins', ui-sans-serif, system-ui, -apple-system, sans-serif;
+
+	/* Brand Indigo. Not a DaisyUI role: used directly as `bg-brand-indigo`
+	   for the summary bar. */
+	--color-brand-indigo: #1c1a9b;
+}
 
 /* Remove 300ms tap delay on all interactive elements */
 button,

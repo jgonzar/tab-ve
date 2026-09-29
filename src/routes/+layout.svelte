@@ -17,18 +17,19 @@
 	//
 	// This is the playbook's *dark pill* branch. It keeps the state-coloured
 	// title — that only becomes illegible on a white pill, which is what the
-	// playbook warns about. fill is --color-base-300, the deepest surface in
-	// the DaisyUI dark theme, so the toast reads as app chrome rather than a
+	// playbook warns about. fill is --color-base-300, the top step of the Tab
+	// theme's surface ramp, so the toast reads as app chrome rather than a
 	// white card dropped on top of it. roundness 16 matches the rounded-2xl
 	// on the ride cards. The `!` is Tailwind v4's important modifier, needed
 	// to beat the package's baked-in colours.
 	const toasterOptions = {
 		duration: 5000,
-		// Lifted one ramp step ABOVE base-100 (#1d232a). DaisyUI's dark theme has
-		// no token lighter than the page, and surface-vs-surface contrast in a
-		// dark theme tops out ~1.4:1, so the separation comes from the drop
-		// shadow on [data-sileo-canvas] in app.css, not from this value alone.
-		fill: '#2b333b',
+		// Read from the theme, not copied: sileo writes this straight into the
+		// SVG `fill` attribute, and both WebKit and Chromium resolve var() there.
+		// base-300 sits two steps above the page (base-100), but surface-vs-surface
+		// contrast in a dark theme stays low, so the separation still comes from
+		// the drop shadow on [data-sileo-canvas] in app.css, not this value alone.
+		fill: 'var(--color-base-300)',
 		roundness: 16,
 		autopilot: true,
 		styles: {
