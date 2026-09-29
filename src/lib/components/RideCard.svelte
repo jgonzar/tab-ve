@@ -207,7 +207,7 @@
 		{#if editingPrice}
 			<div class="flex items-center gap-2">
 				<div class="relative flex-1">
-					<span class="absolute left-3 top-1/2 -translate-y-1/2 text-base-content/50 font-medium">$</span>
+					<span class="absolute left-3 top-1/2 -translate-y-1/2 text-base-content/60 font-medium">$</span>
 					<input
 						use:focusAndSelect
 						type="text"
@@ -222,7 +222,7 @@
 					/>
 				</div>
 				<button
-					class="btn btn-success btn-square"
+					class="btn btn-accent btn-square"
 					onclick={savePrice}
 					disabled={savingPrice}
 					aria-label="Guardar precio"
@@ -263,18 +263,18 @@
 							</button>
 						{:else}
 							<button class="flex flex-col text-left" onclick={startEditPrice}>
-								<span class="text-xs text-warning font-medium leading-tight">Sin precio</span>
-								<span class="font-bold text-base text-base-content/40 leading-tight">Pendiente</span>
+								<span class="text-xs text-info font-medium leading-tight">Sin precio</span>
+								<span class="font-bold text-base text-base-content/60 leading-tight">Pendiente</span>
 							</button>
 						{/if}
 						{#if precioVes}
-							<span class="text-xs text-base-content/40">{precioVes}</span>
+							<span class="text-xs text-base-content/60">{precioVes}</span>
 						{/if}
 					</div>
 
 					{#if actionable}
 						<button
-							class="btn btn-ghost btn-sm btn-circle text-base-content/70"
+							class="btn btn-ghost btn-sm btn-circle text-base-content/80"
 							onclick={() => (menuOpen = true)}
 							aria-label="Opciones"
 						>
@@ -293,25 +293,25 @@
 		<div class="text-sm">
 			<p class="font-medium text-base-content">{origen}</p>
 			{#each stops as stop}
-				<p class="text-base-content/50 pl-3 leading-6">↓ {stop}</p>
+				<p class="text-base-content/60 pl-3 leading-6">↓ {stop}</p>
 			{/each}
 			<p class="text-base-content/60 leading-6">→ {destino}</p>
 		</div>
 
 		<!-- Meta -->
 		{#if viaje.minutosEspera}
-			<div class="text-xs text-base-content/40">{viaje.minutosEspera} min espera</div>
+			<div class="text-xs text-base-content/60">{viaje.minutosEspera} min espera</div>
 		{/if}
 
 		{#if viaje.notas}
-			<p class="text-xs text-base-content/40 italic">{viaje.notas}</p>
+			<p class="text-xs text-base-content/60 italic">{viaje.notas}</p>
 		{/if}
 
 		<!-- Footer -->
 		{#if onRestore}
 			<div class="flex items-center justify-between pt-2 border-t border-base-300">
-				<span class="text-xs text-base-content/30">Borrado {fechaBorrado}</span>
-				<button class="btn btn-warning btn-xs" onclick={restoreRide} disabled={restoring}>
+				<span class="text-xs text-base-content/60">Borrado {fechaBorrado}</span>
+				<button class="btn btn-primary btn-xs" onclick={restoreRide} disabled={restoring}>
 					{#if restoring}
 						<span class="loading loading-spinner loading-xs"></span>
 					{:else}
@@ -321,18 +321,18 @@
 			</div>
 		{:else}
 			<div class="flex items-center justify-between pt-2 border-t border-base-300">
-				<span class="text-xs text-base-content/30">{fecha}</span>
+				<span class="text-xs text-base-content/60">{fecha}</span>
 				{#if pending}
-					<span class="flex items-center gap-1 text-xs text-base-content/40">
+					<span class="flex items-center gap-1 text-xs text-base-content/60">
 						<span class="loading loading-spinner loading-xs"></span>
 						Pendiente
 					</span>
 				{:else if fechaPago}
 					<div class="flex items-center gap-3">
-						<span class="text-xs text-success/70">Pagado {fechaPago}</span>
+						<span class="text-xs text-success">Pagado {fechaPago}</span>
 						{#if onUnpaid}
 							<button
-								class="btn btn-ghost btn-sm text-warning"
+								class="btn btn-ghost btn-sm text-base-content/80"
 								onclick={unpayRide}
 								disabled={unpaying}
 							>
@@ -345,7 +345,7 @@
 						{/if}
 					</div>
 				{:else}
-					<button class="btn btn-success btn-sm" onclick={markPaid} disabled={paying}>
+					<button class="btn btn-accent btn-sm" onclick={markPaid} disabled={paying}>
 						{#if paying}
 							<span class="loading loading-spinner loading-xs"></span>
 						{:else}
@@ -361,23 +361,23 @@
 <!-- Action sheet — kept at the component root, outside the card's own layout. -->
 {#if actionable}
 	<div class="modal modal-bottom" class:modal-open={menuOpen} role="dialog" aria-modal="true">
-		<div class="modal-box p-0">
+		<div class="modal-box bg-base-200 p-0">
 			<div class="px-5 pt-4 pb-3 text-center">
-				<p class="text-sm text-base-content/50 truncate">{origen} → {destino}</p>
+				<p class="text-sm text-base-content/60 truncate">{origen} → {destino}</p>
 			</div>
 
 			<button
-				class="w-full flex items-center gap-4 px-5 py-4 text-base border-t border-base-300 active:bg-base-200"
+				class="w-full flex items-center gap-4 px-5 py-4 text-base border-t border-base-300 active:bg-base-300"
 				onclick={() => { menuOpen = false; onEdit?.(viaje); }}
 			>
-				<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-base-content/70" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+				<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-base-content/80" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
 					<path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
 				</svg>
 				Editar
 			</button>
 
 			<button
-				class="w-full flex items-center gap-4 px-5 py-4 text-base text-error border-t border-base-300 active:bg-base-200"
+				class="w-full flex items-center gap-4 px-5 py-4 text-base text-error border-t border-base-300 active:bg-base-300"
 				onclick={() => { menuOpen = false; confirmingDelete = true; }}
 			>
 				<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">

@@ -46,22 +46,22 @@
 	}
 </script>
 
-<div class="card bg-base-200 shadow-sm sticky top-16 z-20 mb-4">
+<div class="card bg-brand-indigo shadow-sm sticky top-16 z-20 mb-4">
 	<div class="card-body p-4 py-3">
 		<div class="flex items-center justify-around">
 			<div class="text-center">
 				<p class="text-2xl font-bold">{count}</p>
-				<p class="text-xs text-base-content/40 uppercase tracking-wide">Pendientes</p>
+				<p class="text-xs text-base-content/60 uppercase tracking-wide">Pendientes</p>
 			</div>
 			<div class="w-px h-8 bg-base-300"></div>
 			<div class="text-center">
 				<p class="text-2xl font-bold">{totalUsdFmt}</p>
 				{#if totalVes}
-					<p class="text-sm text-base-content/50">{totalVes}</p>
+					<p class="text-sm text-base-content/60">{totalVes}</p>
 				{/if}
-				<p class="text-xs text-base-content/40 uppercase tracking-wide">Total</p>
+				<p class="text-xs text-base-content/60 uppercase tracking-wide">Total</p>
 				{#if stale}
-					<p class="text-xs text-warning/60">tasa de ayer</p>
+					<p class="text-xs text-warning">tasa de ayer</p>
 				{/if}
 			</div>
 		</div>
@@ -70,7 +70,7 @@
 			<div class="border-t border-base-300 mt-2 pt-2 flex items-center justify-between">
 				{#if onExport}
 					<button
-						class="btn btn-ghost btn-xs text-base-content/40 gap-1"
+						class="btn btn-ghost btn-xs text-base-content/60 gap-1"
 						onclick={onExport}
 						aria-label="Exportar resumen"
 					>
@@ -84,7 +84,7 @@
 				{/if}
 
 				{#if onPayAll}
-					<button class="btn btn-ghost btn-xs text-base-content/40" onclick={() => (confirming = true)}>
+					<button class="btn btn-ghost btn-xs text-base-content/60" onclick={() => (confirming = true)}>
 						Marcar todo pagado
 					</button>
 				{/if}
@@ -103,7 +103,7 @@
 		bind:open={confirming}
 		title="¿Marcar todas como pagadas?"
 		confirmLabel="Sí, pagar todo"
-		confirmClass="btn-success"
+		confirmClass="btn-accent"
 		busy={paying}
 		onConfirm={confirm}
 	>
@@ -111,7 +111,7 @@
 		{count === 1 ? 'carrera' : 'carreras'} por
 		<span class="font-semibold text-base-content">{totalUsdFmt}</span>
 		{#if totalVes}
-			<span class="text-base-content/50">({totalVes})</span>
+			<span class="text-base-content/60">({totalVes})</span>
 		{/if}
 		como pagadas.
 	</ConfirmDialog>

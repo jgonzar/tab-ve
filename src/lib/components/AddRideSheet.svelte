@@ -230,7 +230,7 @@
 
 <!-- modal-open class drives visibility — no showModal()/close() -->
 <div class="modal modal-bottom" class:modal-open={open} role="dialog" aria-modal="true">
-	<div class="modal-box max-h-[92vh] flex flex-col p-0">
+	<div class="modal-box bg-base-200 max-h-[92vh] flex flex-col p-0">
 		<!-- Header -->
 		<div class="flex items-center justify-between px-4 py-3 border-b border-base-300 shrink-0">
 			<h3 class="font-bold text-lg">{editViaje ? 'Editar Carrera' : 'Nueva Carrera'}</h3>
@@ -315,7 +315,7 @@
 				<div class="space-y-1">
 					<label class="text-base font-semibold text-base-content/80">Precio</label>
 					<div class="relative">
-						<span class="absolute left-3 top-1/2 -translate-y-1/2 text-base-content/50 text-base">$</span>
+						<span class="absolute left-3 top-1/2 -translate-y-1/2 text-base-content/60 text-base">$</span>
 						<input
 							type="text"
 							bind:value={precioUsd}
@@ -334,7 +334,7 @@
 				<div class="space-y-1">
 					<label class="text-base font-semibold text-base-content/80">
 						Tiempo de espera
-						<span class="text-base-content/40 font-normal">(opcional)</span>
+						<span class="text-base-content/60 font-normal">(opcional)</span>
 					</label>
 					<div class="relative">
 						<input
@@ -345,7 +345,7 @@
 							placeholder="0"
 							class="input input-bordered input-lg w-full pr-16"
 						/>
-						<span class="absolute right-3 top-1/2 -translate-y-1/2 text-base-content/40 text-base">min</span>
+						<span class="absolute right-3 top-1/2 -translate-y-1/2 text-base-content/60 text-base">min</span>
 					</div>
 				</div>
 
@@ -353,7 +353,7 @@
 				<div class="space-y-1">
 					<label class="text-base font-semibold text-base-content/80">
 						Notas
-						<span class="text-base-content/40 font-normal">(opcional)</span>
+						<span class="text-base-content/60 font-normal">(opcional)</span>
 					</label>
 					<textarea
 						bind:value={notas}

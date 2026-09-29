@@ -38,7 +38,7 @@
 	>
 		Papelera
 		{#if data.borrados.length > 0}
-			<span class="badge badge-sm badge-warning ml-1">{data.borrados.length}</span>
+			<span class="badge badge-sm badge-neutral ml-1">{data.borrados.length}</span>
 		{/if}
 	</button>
 </div>
@@ -46,7 +46,7 @@
 {#if tab === 'pagadas'}
 	{#if visiblePagadas.length === 0}
 		<div class="flex flex-col items-center justify-center py-24 gap-2">
-			<p class="text-base-content/30 text-sm">No hay carreras pagadas</p>
+			<p class="text-base-content/60 text-sm">No hay carreras pagadas</p>
 		</div>
 	{:else}
 		<div class="space-y-3 pb-8">
@@ -58,7 +58,7 @@
 {:else}
 	{#if visibleBorrados.length === 0}
 		<div class="flex flex-col items-center justify-center py-24 gap-2">
-			<p class="text-base-content/30 text-sm">No hay carreras eliminadas</p>
+			<p class="text-base-content/60 text-sm">No hay carreras eliminadas</p>
 		</div>
 	{:else}
 		<div class="space-y-3 pb-8">
