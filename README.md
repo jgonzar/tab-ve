@@ -37,3 +37,14 @@ pnpm db:push           # apply the Drizzle schema
 pnpm db:seed           # load the 3 users and 25 starter locations
 pnpm dev
 ```
+
+## Deploy
+Deploys are pushed from the Vercel CLI, not from git:
+
+```sh
+vercel build --prod && vercel deploy --prebuilt --prod
+```
+
+* **Why the build runs locally:** `src/lib/server/db.ts` reads `DATABASE_URL` through `$env/static/private`, so it is baked in at build time from the local `.env`. The Vercel project has no environment variables, so a remote build (`vercel --prod`) fails.
+* **Always run `vercel build` right before `vercel deploy --prebuilt`.** Otherwise whatever is already in `.vercel/output` gets shipped, which may be a stale build.
+* **A preview deploy (the same two commands without `--prod`) uses the production database,** because it bakes in the same `DATABASE_URL`. Any ride created or paid there is real.
