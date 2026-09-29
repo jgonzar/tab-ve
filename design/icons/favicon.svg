@@ -1,10 +1,15 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
-  <!-- Chunkier, fewer elements: the 1024 route glyph turns to mush at 16-32px.
-       Solid fill, no gradient — gradients band badly at favicon sizes. -->
-  <rect width="512" height="512" fill="#7c5cff"/>
+  <!--
+    Favicon source, rasterised to 32 and 48px. Same "b." glyph and
+    colourway as icon.svg, but larger in the field (78% of the height:
+    scale 2.1682 = 399.36 / 184.19) so the bowl and the period stay
+    separate at 16 to 32px. Square field, no rounding: browsers show
+    the favicon as-is.
+  -->
+  <rect width="512" height="512" fill="#4342f5"/>
 
-  <!-- "Y" monogram, drawn as strokes so no font is involved. -->
-  <path d="M 148 132 L 256 272 L 364 132 M 256 272 L 256 392"
-        fill="none" stroke="#ffffff" stroke-width="76"
-        stroke-linecap="round" stroke-linejoin="round"/>
+  <g fill="#d7fe65" transform="translate(-496.81 56.32) scale(2.1682)">
+    <path d="M343.99,42.81c-21.01,0-33.46,7.26-42.54,15.56V0h-42.03l.26,181.6h42.5l1.86-32.43c-1.29,25.17,22.31,35.02,39.95,35.02,14.87,0,27.17-4.2,36.9-11.17-2.49-4.72-3.9-10.1-3.9-15.8,0-17.75,13.66-32.36,31.03-33.87.38-3.31.57-6.64.57-9.98,0-35.28-21.53-70.56-64.6-70.56ZM333.1,146.84c-19.72,0-31.39-15.05-31.39-33.47s11.67-33.46,31.39-33.46,31.39,15.04,31.39,33.46-11.94,33.47-31.39,33.47Z"/>
+    <path d="M434.99,157.22c0,13.25-10.75,24-24,24-10.06,0-18.67-6.19-22.24-14.97-1.14-2.79-1.76-5.84-1.76-9.03,0-11.6,8.23-21.29,19.18-23.51,1.56-.32,3.17-.49,4.82-.49,13.25,0,24,10.75,24,24Z"/>
+  </g>
 </svg>

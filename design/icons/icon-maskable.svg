@@ -1,24 +1,18 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
-  <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="1024" y2="1024" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#8b6cff"/>
-      <stop offset="1" stop-color="#6a44f5"/>
-    </linearGradient>
-  </defs>
+  <!--
+    Maskable variant of icon.svg: same field, same glyph, at 0.8 of its
+    scale (glyph height 48% of the canvas: scale 2.6685 = 491.52 / 184.19).
 
-  <rect width="1024" height="1024" fill="url(#bg)"/>
+    Android's maskable safe zone is the centred circle of radius 409.6
+    (80% diameter). The glyph point farthest from its bounding-box centre
+    is 127.23 wordmark units out, i.e. 339.5px at this scale, which leaves
+    about 70px of clearance inside the safe circle. At icon.svg's 60% scale
+    the same point would sit at 424px and get cropped.
+  -->
+  <rect width="1024" height="1024" fill="#4342f5"/>
 
-  <!-- Same glyph as icon.svg, scaled to 0.88 about the centre so it survives
-       Android's maskable crop (safe zone = inner 80%-diameter circle). -->
-  <g transform="translate(61.44 61.44) scale(0.88)">
-    <path d="M 296 660 C 380 456, 560 424, 686 464"
-          fill="none" stroke="#ffffff" stroke-width="44"
-          stroke-linecap="round" stroke-linejoin="round"/>
-
-    <circle cx="300" cy="720" r="52" fill="none" stroke="#ffffff" stroke-width="44"/>
-
-    <path d="M 700 512 C 660 430, 588 412, 588 330 A 112 112 0 1 1 812 330 C 812 412, 740 430, 700 512 Z"
-          fill="#ffffff"/>
-    <circle cx="700" cy="330" r="46" fill="#7657f8"/>
+  <g fill="#d7fe65" transform="translate(-414.53 266.24) scale(2.6685)">
+    <path d="M343.99,42.81c-21.01,0-33.46,7.26-42.54,15.56V0h-42.03l.26,181.6h42.5l1.86-32.43c-1.29,25.17,22.31,35.02,39.95,35.02,14.87,0,27.17-4.2,36.9-11.17-2.49-4.72-3.9-10.1-3.9-15.8,0-17.75,13.66-32.36,31.03-33.87.38-3.31.57-6.64.57-9.98,0-35.28-21.53-70.56-64.6-70.56ZM333.1,146.84c-19.72,0-31.39-15.05-31.39-33.47s11.67-33.46,31.39-33.46,31.39,15.04,31.39,33.46-11.94,33.47-31.39,33.47Z"/>
+    <path d="M434.99,157.22c0,13.25-10.75,24-24,24-10.06,0-18.67-6.19-22.24-14.97-1.14-2.79-1.76-5.84-1.76-9.03,0-11.6,8.23-21.29,19.18-23.51,1.56-.32,3.17-.49,4.82-.49,13.25,0,24,10.75,24,24Z"/>
   </g>
 </svg>
