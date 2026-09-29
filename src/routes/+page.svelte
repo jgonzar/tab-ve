@@ -174,7 +174,7 @@
 
 {#if visibleViajes.length === 0}
 	<div class="flex flex-col items-center justify-center py-24 gap-2">
-		<p class="text-base-content/30 text-sm">No hay carreras pendientes</p>
+		<p class="text-base-content/60 text-sm">No hay carreras pendientes</p>
 	</div>
 {:else}
 	<div class="space-y-3 pwa-list-inset">

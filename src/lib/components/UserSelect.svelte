@@ -9,7 +9,7 @@
 <div class="fixed inset-0 z-50 bg-base-100 flex flex-col items-center justify-center p-8 gap-10">
 	<div class="text-center">
 		<h1 class="text-3xl font-bold tracking-tight">Yummy Track</h1>
-		<p class="text-base-content/50 mt-2 text-sm">Selecciona tu usuario para continuar</p>
+		<p class="text-base-content/60 mt-2 text-sm">Selecciona tu usuario para continuar</p>
 	</div>
 
 	<div class="flex flex-col gap-3 w-full max-w-xs">
@@ -26,7 +26,7 @@
 					</div>
 					<div>
 						<p class="font-semibold">{user.nombre}</p>
-						<p class="text-xs text-base-content/50 capitalize">{user.rol}</p>
+						<p class="text-xs text-base-content/60 capitalize">{user.rol}</p>
 					</div>
 				</div>
 			</button>

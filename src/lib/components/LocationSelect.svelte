@@ -84,7 +84,7 @@
 						type="button"
 						onmousedown={(e) => e.preventDefault()}
 						onclick={createNew}
-						class="w-full text-left px-4 py-3.5 hover:bg-base-300 text-base text-primary font-medium"
+						class="w-full text-left px-4 py-3.5 hover:bg-base-300 text-base text-info font-medium"
 					>
 						+ Crear "{inputValue.trim()}"
 					</button>

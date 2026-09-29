@@ -44,7 +44,7 @@
 </script>
 
 <div class="modal" class:modal-open={open} role="dialog" aria-modal="true">
-	<div class="modal-box relative">
+	<div class="modal-box bg-base-200 relative">
 		<button
 			class="btn btn-circle bg-base-300 border-none text-base-content hover:bg-base-100 absolute right-3 top-3"
 			onclick={close}
@@ -59,7 +59,7 @@
 		<h3 class="font-bold text-lg pr-14">{title}</h3>
 
 		{#if children}
-			<p class="pt-3 text-base text-base-content/70">{@render children()}</p>
+			<p class="pt-3 text-base text-base-content/80">{@render children()}</p>
 		{/if}
 
 		<div class="modal-action">
