@@ -1,9 +1,10 @@
-# Documento de Requisitos del Producto — Yummy Track App
+# Documento de Requisitos del Producto: Tab
 
-**Versión:** 0.2.0  
-**Fecha:** 2026-05-12  
+**Versión:** 0.3.0  
+**Fecha:** 2026-09-29  
 **Autor:** JA  
 **Estado:** Borrador  
+**Nombre anterior:** Yummy Track App. Renombrada a Tab el 2026-09-29.  
 
 ---
 
@@ -11,15 +12,17 @@
 
 ### 1.1 Problema
 
-Yummy es el servicio de transporte por aplicación predominante en Venezuela. JA y Marcela utilizan regularmente a una conductora de confianza, MC, para sus traslados. El seguimiento de las carreras, sus costos y el monto acumulado adeudado se hace actualmente rebuscando mensajes de chat, lo que resulta tedioso y propenso a errores. Los pagos se realizan en lotes, no por viaje, por lo que es fácil perder la cuenta.
+En Venezuela, JA y Marcela utilizan regularmente a una conductora de confianza, MC, para sus traslados. El seguimiento de las carreras, sus costos y el monto acumulado adeudado se hace actualmente rebuscando mensajes de chat, lo que resulta tedioso y propenso a errores. Los pagos se realizan en lotes, no por viaje, por lo que es fácil perder la cuenta.
 
 ### 1.2 Solución
 
-Yummy Track App es una aplicación web ligera y optimizada para móvil que permite registrar y dar seguimiento a los viajes de Yummy. Muestra todos los viajes pendientes de pago en una sola pantalla, permite marcarlos como pagados y presenta los totales tanto en dólares (USD) como en bolívares venezolanos (usando la tasa BCV diaria).
+Tab es una aplicación web ligera, optimizada para móvil e instalable en la pantalla de inicio (PWA), que permite registrar y dar seguimiento a las carreras con MC. Muestra todos los viajes pendientes de pago en una sola pantalla, permite marcarlos como pagados y presenta los totales tanto en dólares (USD) como en bolívares venezolanos (usando la tasa BCV oficial diaria).
+
+El nombre describe el trabajo central: llevar una cuenta abierta. Se suman carreras a medida que ocurren, siempre se sabe cuánto se debe y la cuenta se salda en lote al pagar.
 
 ### 1.3 Objetivos (POC)
 
-- Registrar viajes con uno o más usuarios, origen/paradas/destino, precio en USD y tiempo de espera opcional.
+- Registrar viajes con uno o más usuarios, origen/paradas/destino, fecha, precio en USD opcional y tiempo de espera opcional.
 - Mostrar todos los viajes pendientes en la pantalla principal con totales acumulados.
 - Marcar viajes como pagados — los viajes pagados se mueven al historial.
 - Mostrar totales en USD y bolívares (tasa BCV diaria, en caché).
@@ -33,7 +36,7 @@ Yummy Track App es una aplicación web ligera y optimizada para móvil que permi
 - Soporte para múltiples conductores (siempre el mismo conductor de confianza).
 - División de costos por usuario ni seguimiento de reembolsos internos.
 - Notificaciones push o recordatorios.
-- App nativa iOS/Android (PWA es aceptable como mejora futura).
+- App nativa iOS/Android. En su lugar, la app se instala como PWA (ver Sección 6.4).
 - Panel de administración, gestión de usuarios ni creación de cuentas.
 - Servicios de terceros de pago de ningún tipo.
 - Reportes complejos, gráficas ni analíticas.
@@ -82,6 +85,25 @@ volver, no una descripción del estado actual.
 
 ---
 
+### 1.6 Dónde la app ya superó las secciones 3.1, 4 y 5.4
+
+Como las secciones 3.1, 4 y 5.4 se conservan tal cual (ver 1.5), también conservan algunos
+datos que la app ya cambió. Donde esas secciones y esta tabla no coinciden, vale esta tabla,
+que describe el código.
+
+| Especificación original | Lo que hace la app |
+|---|---|
+| `precio_usd` requerido y `> 0` (3.1, 4) | **Opcional.** La columna admite `NULL` y el precio debe ser `>= 0`. Una carrera sin precio muestra "Sin precio" en la tarjeta y en el recibo, y suma 0 al total. El precio se puede agregar o corregir tocándolo en la tarjeta. |
+| La fecha es solo `creado_en`, fijada al guardar (3.1, 4) | **La fecha del viaje es editable.** El formulario tiene un campo Fecha (por defecto, hoy). Se guarda en `creado_en` a las 12:00 UTC del día elegido, e Inicio ordena por ella. |
+| `viajes` no tiene columna de borrado (4) | **Borrado lógico:** columna `viajes.borrado_en TIMESTAMPTZ`. Eliminar llena esa columna, y la carrera pasa a la papelera de Historial, desde donde se puede restaurar (ver 3.7). |
+| Pagar es irreversible (3.1) | **Se puede deshacer:** "Devolver a pendientes" en Historial pone `pagado_en` en `NULL` (ver 3.5). |
+| Eliminar dice *"Esta acción no se puede deshacer"* (5.4) | La confirmación dice que la carrera se podrá restaurar desde la papelera en Historial. |
+| Menú ··· como dropdown (5.4) | El menú ··· abre una hoja inferior con Editar, Eliminar y Cancelar. |
+| Barra de resumen con "Carreras Pendientes" y "Monto Pendiente" (5.4) | Las etiquetas son "Pendientes" y "Total". La barra también tiene "Compartir" (ver 3.8) y "Marcar todo pagado", con confirmación. |
+| Historial es una sola lista (5.4) | Historial tiene dos pestañas: **Pagadas** y **Papelera**. |
+
+---
+
 ## 2. Usuarios y Autenticación
 
 ### 2.1 Perfiles de Usuario
@@ -97,10 +119,10 @@ volver, no una descripción del estado actual.
 ### 2.2 Modelo de Sesión
 
 - Al abrir la app por primera vez, el usuario ve una pantalla de bienvenida a pantalla completa — "¿Quién eres?" — con tres tarjetas grandes y seleccionables, una por usuario.
-- La selección se persiste en `localStorage` bajo la clave `yummy_active_user`.
+- La selección se persiste en `localStorage` bajo la clave `tab_active_user`.
 - El ícono de avatar en la esquina superior derecha de la barra de navegación muestra las iniciales del usuario activo. Al tocarlo se abre un popover pequeño para cambiar de usuario.
 - Sin contraseñas, sin tokens, sin sesión del lado del servidor. La identidad es exclusivamente local al dispositivo.
-- Cuando MC está activa, el formulario de nueva carrera pre-selecciona su nombre como conductora pero exige asignar al menos un cliente (JA, Marcela o ambos).
+- El usuario activo no cambia cómo se asigna una carrera: toda carrera nueva se asigna a JA + Marcela, con MC como conductora (`src/lib/rideDefaults.ts`, ver Sección 1.5).
 
 **Justificación:** La app es un registro compartido entre los tres. Identidad local al dispositivo es suficiente.
 
@@ -147,7 +169,7 @@ Un **viaje** (carrera) representa un trayecto desde un origen hasta un destino f
 - Campo entero `minutos_espera` en el viaje.
 - Representa el tiempo de espera acumulado durante todo el trayecto (por ejemplo, 30 minutos de espera en el punto B antes de continuar hacia C).
 - El tiempo de espera no afecta el campo de precio — es meramente informativo.
-- Se muestra en la tarjeta del viaje como "⏱ 30 min espera" si es distinto de cero.
+- Se muestra en la tarjeta del viaje como "30 min espera" si es distinto de cero.
 
 ### 3.4 Gestión de Destinos
 
@@ -161,17 +183,18 @@ La UI presenta la lista como un desplegable con búsqueda integrada (filtrado en
 
 **Añadir destinos nuevos:** Cuando el lugar buscado no existe en la lista, cualquier usuario puede escribir un nombre nuevo directamente en el campo de búsqueda. Al guardar la carrera, ese destino se crea en la base de datos como una ubicación permanente — aparecerá en el desplegable de todos los usuarios en adelante. No hay distinción entre "ubicaciones comunes" y "ubicaciones personalizadas"; todas son iguales y reutilizables.
 
-**Deduplicación:** El desplegable muestra sugerencias mientras el usuario escribe, lo que reduce entradas duplicadas por error. No hay deduplicación automática en el POC.
+**Deduplicación:** El desplegable muestra sugerencias mientras el usuario escribe, lo que reduce entradas duplicadas por error. Los nombres son únicos en la base de datos: escribir un nombre que ya existe reutiliza esa ubicación. No hay deduplicación aproximada (mayúsculas, acentos o variantes cuentan como nombres distintos).
 
 ### 3.5 Pago e Historial
 
 - Cualquier usuario en el dispositivo puede marcar cualquier viaje como pagado.
 - Marcar un viaje como pagado establece `pagado_en = ahora()` y lo elimina de la lista de Inicio.
-- Los viajes pagados son accesibles en la página de **Historial**, listados en orden cronológico inverso.
-- No hay deshacer en el POC — si un viaje se marca como pagado por error, permanece en el historial.
+- **Marcar todo pagado** (barra de resumen) paga de una vez todas las carreras pendientes, tras un modal de confirmación con la cantidad y el total.
+- Los viajes pagados son accesibles en la pestaña **Pagadas** de **Historial**, ordenados por fecha de pago, la más reciente primero. Cada tarjeta muestra "Pagado" con la fecha.
+- **Devolver a pendientes:** si un viaje se marcó como pagado por error, este botón en Historial pone `pagado_en` en `NULL` y la carrera vuelve a Inicio.
 - La página de Inicio siempre muestra **todos los viajes pendientes** sin importar su antigüedad (sin ciclo mensual).
 
-**Edición:** Los viajes pendientes pueden editarse en su totalidad (todos los campos). Los viajes pagados son de solo lectura en el POC.
+**Edición:** Los viajes pendientes pueden editarse en su totalidad desde el menú ···, incluida la fecha. El precio también se puede editar directamente en la tarjeta. Los viajes pagados son de solo lectura, salvo "Devolver a pendientes".
 
 ### 3.6 Conversión de Moneda (Tasa BCV)
 
@@ -179,21 +202,40 @@ La UI presenta la lista como un desplegable con búsqueda integrada (filtrado en
 - La app obtiene y almacena en caché la tasa de cambio oficial BCV diaria (bolívares por USD).
 - El resumen en la página de Inicio muestra el monto total pendiente en USD y bolívares.
 - Las tarjetas individuales de viaje muestran el equivalente en bolívares como texto secundario de menor tamaño.
-- La tasa en caché se actualiza una vez al día (TTL: 24 horas). La app usa el valor en caché entre actualizaciones.
-- Si la tasa no puede obtenerse (sin conexión, API no disponible), se usa la última tasa conocida con un indicador visual (ej. "Tasa del día anterior").
-- Si no existe ninguna tasa en caché, la conversión a bolívares se oculta y se muestra una advertencia pequeña.
+- La tasa en caché se actualiza una vez al día (TTL: 24 horas). Solo se consulta la fuente cuando la última tasa guardada tiene 24 horas o más; entre actualizaciones se usa el valor en caché.
+- Si la tasa no puede obtenerse (sin conexión, API no disponible), se usa la última tasa conocida y la barra de resumen muestra el indicador "tasa de ayer" en color `warning`.
+- Si no existe ninguna tasa en caché, la conversión a bolívares se oculta y solo se muestran los montos en USD.
 
-**Fuente de la tasa BCV seleccionada: `yadio.io`**
+**Fuente de la tasa BCV: `ve.dolarapi.com`**
 
 | Criterio | Evaluación |
 |---|---|
-| URL | `https://yadio.io/api/rate/USD/VES` |
+| URL | `https://ve.dolarapi.com/v1/dolares/oficial` |
 | Costo | Gratuito, sin clave de API |
-| Formato | JSON `{ "rate": 123456.78, ... }` |
-| Confiabilidad | Ampliamente usado en la comunidad dev venezolana; provee tasa BCV oficial |
-| Mantenimiento | Cero — sin dependencia de scraping ni cambios de HTML |
+| Formato | JSON; la app lee el campo `promedio` (bolívares por USD) |
+| Tasa | Oficial BCV |
+| Mantenimiento | Cero: sin dependencia de scraping ni cambios de HTML |
 
-La tasa se obtiene del lado del servidor (ruta API de SvelteKit) para evitar problemas de CORS y centralizar el caché en la base de datos. Si `yadio.io` no responde, se devuelve la última tasa almacenada en `bcv_rate_cache`.
+La tasa se obtiene del lado del servidor (`src/lib/server/bcv.ts`) para evitar problemas de CORS y centralizar el caché en la base de datos. Cada tasa nueva se inserta en `bcv_tasa_cache`. Si `ve.dolarapi.com` no responde, se devuelve la última tasa almacenada, marcada como desactualizada.
+
+### 3.7 Eliminación y Papelera
+
+- Eliminar una carrera pendiente (menú ··· → Eliminar, con confirmación) es un **borrado lógico**: establece `borrado_en = ahora()` y la carrera sale de Inicio. No se borra ninguna fila.
+- Las carreras eliminadas aparecen en la pestaña **Papelera** de Historial, con la fecha de borrado. La pestaña muestra un contador cuando hay alguna.
+- **Restaurar** pone `borrado_en` en `NULL` y la carrera vuelve a aparecer en Inicio.
+- Las carreras en la papelera no cuentan en los totales ni en "Marcar todo pagado".
+
+### 3.8 Exportar Resumen (recibo en texto)
+
+- El botón **Compartir** de la barra de resumen arma un recibo en texto plano con todas las carreras pendientes: encabezado "TAB" y fecha, luego una línea por carrera (fecha, ruta, pasajeros y precio en USD con su equivalente en Bs), y al final la cantidad y el total.
+- Una carrera sin precio aparece como "Sin precio". Sin tasa BCV, el recibo solo lleva USD.
+- Las carreras en cola sin conexión no se incluyen, porque todavía no existen en el servidor.
+- Se abre la hoja de compartir del sistema (`navigator.share`). Si no está disponible o el usuario la cancela, el texto se copia al portapapeles con un toast "Resumen copiado".
+
+### 3.9 Carreras Rápidas
+
+- Sobre la barra de resumen hay atajos de un toque para las rutas más frecuentes (por ejemplo El Rocío → El Limón). El primer toque pide confirmación y el segundo crea la carrera, sin precio y con la fecha actual. La confirmación se cancela sola a los 3 segundos.
+- Sin conexión, la carrera rápida entra en la misma cola que el formulario (ver Sección 7.2).
 
 ---
 
@@ -254,10 +296,11 @@ Las especificaciones detalladas de componentes se producirán en un documento se
 
 | Restricción | Especificación |
 |---|---|
-| Esquema de color | Solo modo oscuro (sin selector claro/oscuro en el POC) |
+| Esquema de color | Solo modo oscuro: el tema `tab` (ver 5.2). Sin selector claro/oscuro en el POC |
 | Dispositivos objetivo | iPhone (375–430 px) en Safari y Android (~360–412 px) en Chrome |
 | Área mínima de toque | 44 × 44 pt (Apple HIG) |
-| Tipografía | Pila de fuente del sistema (`-apple-system, BlinkMacSystemFont, "Segoe UI"`) |
+| Tipografía | **Poppins**, autoalojada, con la pila del sistema como respaldo (ver 5.2) |
+| Opacidad mínima del texto | **60 %.** Ningún texto por debajo de 60 % de opacidad, salvo controles deshabilitados y placeholders |
 | Idioma | 100 % español — todos los textos, etiquetas, mensajes de error y estados |
 | Animaciones | Presentes pero sutiles — ver Sección 5.5 |
 | Conexión | Usable con conectividad degradada o intermitente |
@@ -267,23 +310,64 @@ Las especificaciones detalladas de componentes se producirán en un documento se
 | Capa | Tecnología | Justificación |
 |---|---|---|
 | Estilos base | Tailwind CSS v4 | Utilidades; excelente soporte de modo oscuro |
-| Componentes UI | DaisyUI (plugin Tailwind) | Biblioteca de componentes semánticos, themed, accesibles; cero costo |
+| Componentes UI | DaisyUI 5 (plugin Tailwind) | Biblioteca de componentes semánticos, themed, accesibles; cero costo |
+| Tema | Tema propio `tab` en `src/app.css` | Único tema que se publica (`themes: false`): los temas de DaisyUI no se incluyen |
+| Tipografía | Poppins (OFL) vía `@fontsource/poppins` | Acompaña al wordmark geométrico; autoalojada, sin conexión a terceros |
 
-DaisyUI provee los componentes base (botones, tarjetas, drawers, badges, modales, toasts, etc.) con theming de modo oscuro nativo. Los colores y tokens de marca de Yummy Track se definen sobre el tema oscuro de DaisyUI.
+DaisyUI provee los componentes base (botones, tarjetas, drawers, badges, modales, etc.). Los componentes usan solo los roles de DaisyUI, así que toman los colores del tema `tab` sin conocer los valores.
+
+**Tokens del tema `tab` (oscuro).** Los neutros derivan del matiz del Índigo de marca.
+
+| Token | Hex | Uso |
+|---|---|---|
+| `base-100` | `#0b0a29` | Fondo de página; `background_color` del manifest (splash) |
+| `base-200` | `#13113f` | Superficies elevadas: tarjetas, navbar, drawer y hojas inferiores (con `bg-base-200` explícito). También el `theme-color` (barra de estado) |
+| `base-300` | `#1f1b62` | Bordes, inputs, filas presionadas y fondo de los toasts |
+| `base-content` | `#f8f8f8` | Texto (Off-white de marca) |
+| `brand-indigo` | `#1c1a9b` | Índigo de marca, solo en la barra de resumen (`bg-brand-indigo`). No es un rol de DaisyUI |
+| `primary` / `-content` | `#4342f5` / `#f8f8f8` | Violeta de marca: botón "+", avatar, chips de clientes, Restaurar |
+| `accent` / `-content` | `#d7fe65` / `#0b0a29` | Lima de marca: "Marcar Pagado", "Sí, pagar todo", el punto del wordmark |
+| `success` / `-content` | `#d7fe65` / `#0b0a29` | Igual que `accent`: pagado es la acción central, así que lleva el color insignia |
+| `info` / `-content` | `#97a1ff` / `#0b0a29` | Violeta claro para **texto** de marca: "Sin precio", `+ Crear "…"` en el buscador de ubicaciones |
+| `warning` / `-content` | `#f6d56b` / `#0b0a29` | Butter. **Solo** el banner sin conexión y "tasa de ayer" |
+| `error` / `-content` | `#f66b71` / `#0b0a29` | Validación y Eliminar |
+| `neutral` / `-content` | `#1f1b62` / `#f8f8f8` | Relleno de filas activas de menú y el contador de la papelera (igual a `base-300`) |
+| `secondary` / `-content` | `#4342f5` / `#f8f8f8` | Sin uso; replica `primary` |
+
+**Texto y contraste.**
+
+- Tres niveles de opacidad de texto: **100 %** principal, **80 %** secundario, **60 %** terciario (precio en Bs, paradas, notas, fechas, etiquetas de la barra de resumen, estados vacíos). El 60 % pasa WCAG AA sobre todas las superficies, incluido el Índigo de la barra de resumen.
+- Las tarjetas en cola sin conexión se atenúan a **80 %** de opacidad, para que su texto de 60 % siga pasando AA.
+- El violeta (`primary`) **nunca** es texto sobre fondo oscuro: para texto de marca se usa `info` o Lima.
+- Nunca Violeta sobre Índigo, y nunca Lima junto a Off-white: su contraste es 2,00:1 y 1,08:1.
+- `warning` queda reservado para advertencias reales. "Devolver a pendientes" es un botón fantasma neutro al 80 %.
+
+**Tipografía.**
+
+- Poppins, subconjunto Latin (cubre todos los caracteres del español), pesos **400, 500, 600 y 700**, más **400 itálica** para las notas. Ningún peso por debajo de 400.
+- Es la `--font-sans` de Tailwind, con `ui-sans-serif, system-ui, -apple-system, sans-serif` como respaldo. Los archivos usan `font-display: swap` y `src/hooks.server.ts` los precarga (solo los `.woff2`).
+- Poppins no tiene cifras tabulares (`tnum`), así que los totales usan sus dígitos proporcionales.
+
+**Marca.**
+
+- El wordmark "tab." (`src/lib/components/Wordmark.svelte`) es un SVG en línea: letras en Off-white y el punto en Lima. Es una versión modificada de Glitz, entregada como contornos, así que no se usa ninguna fuente para él.
+- El ícono de la app, el ícono maskable y el favicon usan el glifo "b." en Lima sobre un campo Violeta (`design/icons/`).
 
 ### 5.3 Estructura de Navegación
 
 ```
 Barra de navegación superior
 ├── Izquierda: Hamburguesa → Drawer lateral
-├── Centro:    "Yummy Track" (nombre de la app)
+├── Centro:    Wordmark "tab." (SVG)
 └── Derecha:   Chip de avatar (iniciales del usuario) → Popover cambio de usuario
 
-Drawer lateral
+Drawer lateral (encabezado: wordmark "tab.")
 ├── Inicio          (por defecto)
-└── Historial
+└── Historial       (pestañas Pagadas y Papelera)
     [Futuro: Configuración]
 ```
+
+En pantallas `md` o más anchas no hay hamburguesa: el wordmark y los enlaces Inicio e Historial van a la izquierda de la barra.
 
 ### 5.4 Inventario de Páginas
 
@@ -396,23 +480,31 @@ Todas las animaciones deben respetar `prefers-reduced-motion` (reducir a crossfa
 
 | Capa | Tecnología | Justificación |
 |---|---|---|
-| Frontend + rutas API | SvelteKit (Svelte 5) | Requisito del usuario; excelente soporte en Vercel |
-| Base de datos | Neon (Postgres serverless) | Tier gratuito; integración nativa con Vercel; SQL estándar |
+| Frontend + rutas API | SvelteKit 2 (Svelte 5, runes) | Requisito del usuario; excelente soporte en Vercel |
+| Base de datos | Neon (Postgres serverless, driver HTTP) | Tier gratuito; integración nativa con Vercel; SQL estándar |
 | ORM | Drizzle ORM | Ligero, tipado fuertemente, compatible con Neon + SvelteKit |
-| Despliegue | Vercel | Tier gratuito; soporte zero-config para SvelteKit |
-| Estilos | Tailwind CSS v4 + DaisyUI | Utilities + componentes temáticos; costo cero |
-| Caché de tasa BCV | Tabla `bcv_tasa_cache` | Seguro para serverless; evita llamadas externas en cada carga de página |
+| Despliegue | Vercel (`adapter-vercel`, runtime `nodejs22.x`) | Tier gratuito; soporte zero-config para SvelteKit |
+| Estilos | Tailwind CSS v4 + DaisyUI 5, tema `tab` | Utilities + componentes temáticos; costo cero |
+| Tipografía | Poppins vía `@fontsource/poppins` | Autoalojada; ver Sección 5.2 |
+| Toasts | `svelte-sileo` | Notificaciones de éxito y error |
+| Tasa BCV | `ve.dolarapi.com` + tabla `bcv_tasa_cache` | Gratuita; el caché es seguro para serverless y evita llamadas externas en cada carga de página |
+
+Producción: `https://tab-ve.vercel.app`.
 
 ### 6.2 Mapa de Rutas SvelteKit
 
 ```
-/                      → Página de inicio (SSR + cliente)
-/historial             → Página de historial (SSR + cliente)
-/api/viajes            → GET (listar), POST (crear)
-/api/viajes/[id]       → PUT (editar), PATCH (marcar pagado)
-/api/ubicaciones       → GET (lista de comunes)
+/                      → Página de inicio (SSR + cliente): carreras pendientes
+/historial             → Página de historial (SSR + cliente): pagadas y papelera
+/api/viajes            → POST (crear), PATCH (marcar todo pagado)
+/api/viajes/[id]       → PUT (editar), DELETE (borrado lógico),
+                         PATCH (marcar pagado; o con cuerpo { precioUsd },
+                         { unpay: true } o { restore: true })
+/api/ubicaciones       → GET (todas las ubicaciones, por nombre)
 /api/tasa-bcv          → GET (devuelve tasa en caché, actualiza si vence)
 ```
+
+Las listas de carreras no pasan por la API: las cargan los `load` del servidor de `/` y `/historial`.
 
 ### 6.3 Restricciones del Tier Gratuito
 
@@ -420,32 +512,41 @@ Todas las animaciones deben respetar `prefers-reduced-motion` (reducir a crossfa
 - Vercel tier gratuito: 100 GB de ancho de banda, invocaciones de funciones serverless ilimitadas. Sin preocupaciones a esta escala.
 - Sin APIs de terceros de pago en ninguna capa del stack.
 
+### 6.4 PWA Instalable
+
+La app se puede agregar a la pantalla de inicio (iOS con Safari, Android con Chrome) y abre como app independiente. El detalle de la implementación está en [pwa-implementation-plan.md](./pwa-implementation-plan.md).
+
+- **Manifest** (`static/manifest.webmanifest`): `name` y `short_name` "Tab", `display: standalone`, orientación vertical, `lang: es`, `theme_color` `#13113f` y `background_color` `#0b0a29`.
+- **Íconos** (`static/icons/`): 180 px para iOS, 192 y 512 px, un maskable de 512 px y favicons de 32 y 48 px, generados desde `design/icons/`.
+- **Modo standalone:** `viewport-fit=cover` con márgenes de área segura (notch e indicador de inicio), sin rebote de scroll y un pull-to-refresh propio.
+- **Sin service worker.** Abrir la app instalada sin señal muestra la página de error del navegador. La resiliencia de la Sección 7 cubre la pérdida de conexión con la app ya abierta.
+
 ---
 
 ## 7. Comportamiento Offline y Resiliencia
 
 ### 7.1 UI Optimista
 
-- Cuando el usuario envía un nuevo viaje o marca uno como pagado, la UI se actualiza **inmediatamente** — se asume que la acción tendrá éxito.
-- La llamada a la API se ejecuta en segundo plano.
-- Si la llamada falla: el cambio optimista se revierte y se muestra un toast/banner ("No se pudo guardar — se reintentará").
+- Al marcar como pagada, eliminar, restaurar o devolver a pendientes, el botón muestra un indicador de carga. En cuanto el servidor confirma, la tarjeta sale de la lista sin esperar a que se recarguen los datos, y un toast confirma la acción.
+- Si la llamada falla, la tarjeta se queda donde estaba y un toast de error pide intentar de nuevo.
 
-### 7.2 Cola de Reintentos
+### 7.2 Cola sin Conexión
 
-- Las mutaciones fallidas se almacenan en una cola ligera en memoria (o en `localStorage` para persistencia entre recargas).
-- Cuando se restaura la conectividad (detectado via `navigator.onLine` + listener de `visibilitychange`), la cola se vacía y las mutaciones se repiten en orden.
-- Si una mutación en cola falla de nuevo, el usuario ve un error en línea en la tarjeta afectada con una acción manual de "Reintentar".
+- Solo las **carreras nuevas** (formulario y carreras rápidas) se encolan. Si no hay conexión al guardar, o la conexión se cae durante la petición, la carrera se guarda en `localStorage` bajo la clave `tab_pending_rides` y un toast avisa que se enviará al volver la conexión.
+- Las carreras en cola aparecen arriba en Inicio, atenuadas al 80 % y con un indicador "Pendiente". Cuentan en los totales, pero no se pueden editar, pagar ni eliminar, y no entran en el recibo exportado.
+- La cola se envía en orden al abrir la app con conexión y cada vez que el navegador emite el evento `online`. Cada carrera que el servidor acepta sale de la cola; las que fallan se quedan para el siguiente intento.
+- Editar, pagar, eliminar y restaurar no se encolan: requieren conexión.
 
-### 7.3 Indicador de Datos Desactualizados
+### 7.3 Indicador sin Conexión
 
-- Si la app no puede conectarse al servidor al cargar, se muestra la última lista de viajes obtenida exitosamente desde un caché del lado del cliente (caché de `load` de SvelteKit o snapshot en `localStorage`).
-- Un banner en la parte superior de la página indica "Mostrando datos en caché — reconectando…" hasta que se confirme la conectividad.
+- Mientras `navigator.onLine` es falso, un banner fijo al pie de la pantalla, en color `warning`, avisa que no hay conexión y que las carreras se guardarán al reconectar.
+- No hay copia local de la lista de carreras: los datos vienen del `load` del servidor.
 
 ### 7.4 Fallback de Tasa BCV
 
 - El servidor almacena la tasa en la base de datos con una marca de tiempo `obtenida_en`.
 - Si la obtención en vivo falla pero existe un valor en caché, se devuelve el valor en caché.
-- La respuesta de la API incluye `{ tasa, obtenida_en, esta_desactualizada: boolean }` para que la UI pueda mostrar el indicador de frescura.
+- La respuesta de `/api/tasa-bcv` es `{ tasa, obtenidaEn, stale }`, donde `stale` indica que la tasa es del caché vencido, para que la UI pueda mostrar el indicador de frescura. Si no hay ninguna tasa, responde 503.
 
 ---
 
@@ -491,12 +592,11 @@ Las siguientes funcionalidades están explícitamente fuera de alcance para esta
 
 - Soporte para múltiples conductores
 - División de costos por usuario ni seguimiento de deudas
-- Deshacer "marcar como pagado"
 - UI de administración para gestionar o eliminar ubicaciones (se añaden desde el flujo de carrera, no desde un panel)
 - Notificaciones push o SMS
 - Selector de modo claro / oscuro
 - PWA offline-first con service worker completo (la resiliencia básica de la Sección 7 es suficiente)
-- Exportación (CSV, PDF)
+- Exportación a CSV o PDF (el resumen en texto de la Sección 3.8 sí existe)
 - Búsqueda o filtros en la página de Historial
 - Paginación (carga-más es aceptable si la lista crece, pero no requerida inicialmente)
 - Suite de pruebas automatizadas (pruebas manuales son aceptables para el POC)

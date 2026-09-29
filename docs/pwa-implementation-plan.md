@@ -1,3 +1,5 @@
+> **Nota (2026-09-29):** el producto se renombró a Tab en esta fecha. Este plan se conserva como registro histórico; la descripción vigente está en el [PRD](./prd.md).
+
 # Plan de Implementación — PWA Instalable (iOS)
 
 **Versión:** 1.0.0
