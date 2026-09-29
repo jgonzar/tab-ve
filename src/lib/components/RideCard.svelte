@@ -200,7 +200,7 @@
 	}
 </script>
 
-<div class="card bg-base-200 rounded-2xl shadow-sm" class:opacity-60={pending}>
+<div class="card bg-base-200 rounded-2xl shadow-sm" class:opacity-80={pending}>
 	<div class="card-body p-4 gap-3">
 
 		<!-- Price edit: full-width overlay at top of card when active -->
