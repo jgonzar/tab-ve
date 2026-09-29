@@ -1,7 +1,7 @@
 {
-	"name": "Yummy Track",
-	"short_name": "Yummy",
-	"description": "Seguimiento de carreras — viajes, pagos pendientes y tasa BCV",
+	"name": "Tab",
+	"short_name": "Tab",
+	"description": "Registro de carreras y pagos pendientes, en dólares y bolívares.",
 	"start_url": "/",
 	"scope": "/",
 	"display": "standalone",

@@ -112,7 +112,7 @@
 			'Bs. ' + new Intl.NumberFormat('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
 
 		const lines: string[] = [
-			'YUMMY TRACK',
+			'TAB',
 			`Carreras pendientes — ${today}`,
 			div,
 			''

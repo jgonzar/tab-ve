@@ -1,11 +1,12 @@
 <script lang="ts">
 	import { page } from '$app/state';
+	import Wordmark from './Wordmark.svelte';
 
 	let { onNavigate }: { onNavigate: () => void } = $props();
 </script>
 
 <ul class="menu bg-base-200 min-h-full w-64 p-4 gap-1">
-	<li class="menu-title text-xs mb-1">Yummy Track</li>
+	<li class="menu-title mb-1"><Wordmark class="h-5 self-start" /></li>
 	<li>
 		<a
 			href="/"

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { userState, USERS, type User } from '$lib/stores/user.svelte';
+	import Wordmark from './Wordmark.svelte';
 
 	function select(user: User) {
 		userState.setUser(user);
@@ -8,7 +9,7 @@
 
 <div class="fixed inset-0 z-50 bg-base-100 flex flex-col items-center justify-center p-8 gap-10">
 	<div class="text-center">
-		<h1 class="text-3xl font-bold tracking-tight">Yummy Track</h1>
+		<h1><Wordmark class="h-12 mx-auto" /></h1>
 		<p class="text-base-content/50 mt-2 text-sm">Selecciona tu usuario para continuar</p>
 	</div>
 

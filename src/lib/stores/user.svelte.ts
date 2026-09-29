@@ -11,7 +11,7 @@ export const USERS: User[] = [
 	{ id: 3, nombre: 'Maria Carolina', iniciales: 'MC', rol: 'conductora' }
 ];
 
-const STORAGE_KEY = 'yummy_active_user';
+const STORAGE_KEY = 'tab_active_user';
 
 class UserState {
 	activeUser = $state<User | null>(null);

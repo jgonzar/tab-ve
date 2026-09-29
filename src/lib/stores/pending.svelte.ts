@@ -1,6 +1,6 @@
 import { USERS } from './user.svelte';
 
-const STORAGE_KEY = 'yuumy_pending_rides';
+const STORAGE_KEY = 'tab_pending_rides';
 
 export type PendingRide = {
 	localId: string;

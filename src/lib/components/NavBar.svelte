@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { userState, USERS } from '$lib/stores/user.svelte';
+	import Wordmark from './Wordmark.svelte';
 
 	let menuOpen = $state(false);
 
@@ -27,7 +28,7 @@
 
 	<!-- Desktop: brand + links on left -->
 	<div class="navbar-start hidden md:flex items-center gap-1">
-		<span class="font-bold text-base tracking-wide px-2 mr-1">Yummy Track</span>
+		<Wordmark class="h-6 mx-2" />
 		<a
 			href="/"
 			class="btn btn-ghost btn-sm"
@@ -46,7 +47,7 @@
 
 	<!-- Mobile: brand in center -->
 	<div class="navbar-center md:hidden">
-		<span class="font-bold text-base tracking-wide">Yummy Track</span>
+		<Wordmark class="h-6" />
 	</div>
 
 	<!-- User avatar — always on right -->
