@@ -6,8 +6,8 @@
 	 * "¿Seguro? No / Sí" row — those are cramped, easy to mis-tap, and each one
 	 * ends up with its own slightly different behaviour.
 	 *
-	 * Not for the quick-route chips: those confirm by tapping the same chip
-	 * twice, which is the point of the shortcut.
+	 * Not for the quick-route chips: those open QuickRideModal, the card with a
+	 * header tab.
 	 */
 	let {
 		open = $bindable(false),

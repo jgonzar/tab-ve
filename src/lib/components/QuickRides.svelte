@@ -2,9 +2,7 @@
 	import { networkState } from '$lib/stores/network.svelte';
 	import { DEFAULT_CLIENT_IDS } from '$lib/rideDefaults';
 	import { pendingStore } from '$lib/stores/pending.svelte';
-	import { sileo } from 'svelte-sileo';
-
-	type QuickRoute = { label: string; origen: string; paradas?: string[]; destino: string };
+	import QuickRideModal, { type QuickRoute, type SubmitResult } from './QuickRideModal.svelte';
 
 	const ROUTES: QuickRoute[] = [
 		{ label: 'El Rocío → El Limón',           origen: 'El Rocío',  destino: 'El Limón' },
@@ -17,34 +15,11 @@
 
 	let { onCreated }: { onCreated?: () => void } = $props();
 
-	let confirming = $state<number | null>(null); // index of route awaiting confirmation
-	let loading = $state<number | null>(null);    // index of route being submitted
+	let modal: QuickRideModal;
 
-	// Auto-cancel confirmation after 3s if no second tap
-	let confirmTimer: ReturnType<typeof setTimeout> | null = null;
-
-	function tap(index: number) {
-		if (loading !== null) return;
-
-		if (confirming === index) {
-			clearTimer();
-			submit(index);
-		} else {
-			clearTimer();
-			confirming = index;
-			confirmTimer = setTimeout(() => { confirming = null; }, 3000);
-		}
-	}
-
-	function clearTimer() {
-		if (confirmTimer !== null) { clearTimeout(confirmTimer); confirmTimer = null; }
-	}
-
-	async function submit(index: number) {
-		const route = ROUTES[index];
-		loading = index;
-		confirming = null;
-
+	// Runs from the modal's "Registrar carrera" (and "Reintentar"). The modal
+	// shows the outcome, so there are no toasts here.
+	async function submit(route: QuickRoute): Promise<SubmitResult> {
 		const paradaObjs = (route.paradas ?? []).map((n) => ({ id: null, nombre: n }));
 
 		const payload = {
@@ -68,10 +43,8 @@
 				precioUsd: '',
 				payload
 			});
-			sileo.success({ title: 'Carrera guardada', description: 'Se enviará cuando vuelva la conexión.' });
-			loading = null;
 			onCreated?.();
-			return;
+			return 'queued';
 		}
 
 		try {
@@ -81,12 +54,10 @@
 				body: JSON.stringify(payload)
 			});
 			if (!res.ok) throw new Error();
-			sileo.success({ title: 'Carrera creada', description: 'Agregada a pendientes.' });
 			onCreated?.();
+			return 'saved';
 		} catch {
-			sileo.error({ title: 'No se pudo crear la carrera', description: 'Intenta de nuevo.' });
-		} finally {
-			loading = null;
+			return 'error';
 		}
 	}
 </script>
@@ -95,20 +66,15 @@
      stays on the gutter. py-1 leaves room for the focus ring inside the scroll
      box; -mt-1 and mb-3 pay it back, keeping the 16px gap to the summary bar. -->
 <div class="-mx-4 px-4 -mt-1 py-1 mb-3 flex gap-2 overflow-x-auto no-scrollbar">
-	{#each ROUTES as route, i}
+	{#each ROUTES as route}
 		<button
-			class="badge h-11 px-4 text-sm shrink-0 gap-1 cursor-pointer transition-all duration-150 border {confirming === i ? 'badge-primary' : 'badge-outline border-base-content/20'}"
-			class:opacity-50={loading !== null && loading !== i}
-			disabled={loading !== null}
-			onclick={() => tap(i)}
+			class="badge badge-outline border border-base-content/20 h-11 px-4 text-sm shrink-0 cursor-pointer"
+			aria-haspopup="dialog"
+			onclick={(e) => modal.open(route, e.currentTarget)}
 		>
-			{#if loading === i}
-				<span class="loading loading-spinner loading-xs"></span>
-			{:else if confirming === i}
-				<span class="font-semibold">¿Confirmar?</span>
-			{:else}
-				<span>{route.label}</span>
-			{/if}
+			{route.label}
 		</button>
 	{/each}
 </div>
+
+<QuickRideModal bind:this={modal} onSubmit={submit} />

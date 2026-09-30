@@ -20,8 +20,9 @@
 
 	function onTouchStart(e: TouchEvent) {
 		if (refreshing || window.scrollY > 0) return;
-		// The bottom sheet and the drawer scroll on their own
-		if ((e.target as Element | null)?.closest('.modal, .drawer-side')) return;
+		// The bottom sheet and the drawer scroll on their own; overlays (the
+		// quick-ride card) own their touches
+		if ((e.target as Element | null)?.closest('.modal, .drawer-side, [data-overlay]')) return;
 
 		startX = e.touches[0].clientX;
 		startY = e.touches[0].clientY;
