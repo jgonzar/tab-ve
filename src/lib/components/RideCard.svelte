@@ -102,6 +102,12 @@
 	// and not in the trash. Gates the price editor, the ••• menu and the sheet.
 	const actionable = $derived(!fechaPago && !pending && !viaje.borradoEn);
 
+	// Every Inicio variant reserves the ••• slot, even a queued card with no
+	// menu, so the price lines up down the list. Paid (Historial) and trashed
+	// (Papelera) cards never have a menu, so their price sits flush with the
+	// footer's right edge instead. Keyed by variant, the same way the footer is.
+	const reservesMenuSlot = $derived(!fechaPago && !onRestore);
+
 	// ── actions ───────────────────────────────────────────────────────────────
 	function startEditPrice() {
 		if (!actionable) return;
@@ -244,8 +250,7 @@
 			</div>
 		{:else}
 			<!-- Header: clients, the price column, then a fixed 44px slot for the
-			     menu. Every variant reserves the slot, even when it's empty, so the
-			     price's right edge is the same on Inicio, Historial and Papelera. -->
+			     menu on Inicio cards (see reservesMenuSlot) -->
 			<div class="flex items-start gap-1">
 				<div class="flex flex-1 flex-wrap gap-1 pt-1">
 					{#each viaje.clientes as cliente}
@@ -276,23 +281,25 @@
 					{/if}
 				</div>
 
-				<!-- -mr-3 lines the dots up with the content edge, and -my-2 keeps
-				     the slot from growing the header -->
-				<div class="-my-2 -mr-3 size-11 shrink-0">
-					{#if actionable}
-						<button
-							class="btn btn-ghost btn-circle size-11 text-base-content/80"
-							onclick={() => (menuOpen = true)}
-							aria-label="Opciones"
-						>
-							<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
-								<circle cx="5" cy="12" r="2" />
-								<circle cx="12" cy="12" r="2" />
-								<circle cx="19" cy="12" r="2" />
-							</svg>
-						</button>
-					{/if}
-				</div>
+				{#if reservesMenuSlot}
+					<!-- -mr-3 lines the dots up with the content edge, and -my-2 keeps
+					     the slot from growing the header -->
+					<div class="-my-2 -mr-3 size-11 shrink-0">
+						{#if actionable}
+							<button
+								class="btn btn-ghost btn-circle size-11 text-base-content/80"
+								onclick={() => (menuOpen = true)}
+								aria-label="Opciones"
+							>
+								<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+									<circle cx="5" cy="12" r="2" />
+									<circle cx="12" cy="12" r="2" />
+									<circle cx="19" cy="12" r="2" />
+								</svg>
+							</button>
+						{/if}
+					</div>
+				{/if}
 			</div>
 		{/if}
 
