@@ -237,7 +237,7 @@
 			<button
 				type="button"
 				onclick={close}
-				class="btn btn-circle bg-base-300 border-none text-base-content hover:bg-base-100"
+				class="btn btn-circle size-11 bg-base-300 border-none text-base-content hover:bg-base-100"
 				aria-label="Cerrar"
 			>
 				<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
@@ -279,7 +279,7 @@
 							<button
 								type="button"
 								onclick={() => removeParada(parada.key)}
-								class="btn btn-circle shrink-0 mt-7 bg-base-300 border-none text-error hover:bg-error hover:text-error-content"
+								class="btn btn-circle size-11 shrink-0 mt-7 bg-base-300 border-none text-error hover:bg-error hover:text-error-content"
 								aria-label="Eliminar parada"
 							>
 								<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
@@ -296,7 +296,7 @@
 					<button
 						type="button"
 						onclick={addParada}
-						class="btn btn-ghost btn-sm h-10 text-sm text-base-content/60 px-2 -ml-2"
+						class="btn btn-ghost h-11 text-sm text-base-content/60 px-2 -ml-2"
 					>
 						+ Agregar parada
 					</button>
@@ -387,13 +387,13 @@
 			<p class="text-error text-sm">{errors.submit}</p>
 		{/if}
 		<div class="flex gap-2">
-			<button type="button" onclick={close} class="btn btn-ghost flex-1" disabled={submitting}>
+			<button type="button" onclick={close} class="btn btn-ghost h-12 flex-1" disabled={submitting}>
 				Cancelar
 			</button>
 			<button
 				type="button"
 				onclick={submit}
-				class="btn btn-primary flex-1"
+				class="btn btn-primary h-12 flex-1"
 				disabled={submitting}
 			>
 				{#if submitting}

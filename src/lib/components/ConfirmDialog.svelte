@@ -46,7 +46,7 @@
 <div class="modal" class:modal-open={open} role="dialog" aria-modal="true">
 	<div class="modal-box bg-base-200 relative">
 		<button
-			class="btn btn-circle bg-base-300 border-none text-base-content hover:bg-base-100 absolute right-3 top-3"
+			class="btn btn-circle size-11 bg-base-300 border-none text-base-content hover:bg-base-100 absolute right-3 top-3"
 			onclick={close}
 			disabled={busy}
 			aria-label="Cerrar"
@@ -63,8 +63,8 @@
 		{/if}
 
 		<div class="modal-action">
-			<button class="btn btn-ghost" onclick={close} disabled={busy}>Cancelar</button>
-			<button class="btn {confirmClass}" onclick={onConfirm} disabled={busy}>
+			<button class="btn btn-ghost h-11" onclick={close} disabled={busy}>Cancelar</button>
+			<button class="btn h-11 {confirmClass}" onclick={onConfirm} disabled={busy}>
 				{#if busy}
 					<span class="loading loading-spinner loading-sm"></span>
 				{:else}

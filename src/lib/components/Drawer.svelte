@@ -10,6 +10,7 @@
 	<li>
 		<a
 			href="/"
+			class="min-h-11"
 			onclick={onNavigate}
 			class:active={page.url.pathname === '/'}
 		>
@@ -22,6 +23,7 @@
 	<li>
 		<a
 			href="/historial"
+			class="min-h-11"
 			onclick={onNavigate}
 			class:active={page.url.pathname === '/historial'}
 		>

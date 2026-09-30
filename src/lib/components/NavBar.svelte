@@ -19,7 +19,7 @@
 <div class="navbar bg-base-200 sticky top-0 z-30 shadow-sm">
 	<!-- Mobile: hamburger -->
 	<div class="navbar-start md:hidden">
-		<label for="main-drawer" aria-label="Abrir menú" class="btn btn-ghost btn-circle">
+		<label for="main-drawer" aria-label="Abrir menú" class="btn btn-ghost btn-circle size-11">
 			<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
 				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
 			</svg>
@@ -31,14 +31,14 @@
 		<Wordmark class="h-6 mx-2" />
 		<a
 			href="/"
-			class="btn btn-ghost btn-sm"
+			class="btn btn-ghost h-11"
 			class:btn-active={page.url.pathname === '/'}
 		>
 			Inicio
 		</a>
 		<a
 			href="/historial"
-			class="btn btn-ghost btn-sm"
+			class="btn btn-ghost h-11"
 			class:btn-active={page.url.pathname === '/historial'}
 		>
 			Historial
@@ -55,7 +55,7 @@
 		<div class="relative" data-user-menu>
 			<button
 				aria-label="Cambiar usuario"
-				class="btn btn-ghost btn-circle avatar placeholder"
+				class="btn btn-ghost btn-circle size-11 avatar placeholder"
 				onclick={() => (menuOpen = !menuOpen)}
 			>
 				<div class="bg-primary text-primary-content rounded-full w-9 flex items-center justify-center">
@@ -69,6 +69,7 @@
 					{#each USERS as user}
 						<li>
 							<button
+								class="min-h-11"
 								onclick={() => { userState.setUser(user); menuOpen = false; }}
 								class:bg-base-300={userState.activeUser?.id === user.id}
 							>

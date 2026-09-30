@@ -25,14 +25,14 @@
 
 <div class="tabs tabs-border mb-4 px-4 pt-2">
 	<button
-		class="tab"
+		class="tab h-11"
 		class:tab-active={tab === 'pagadas'}
 		onclick={() => (tab = 'pagadas')}
 	>
 		Pagadas
 	</button>
 	<button
-		class="tab"
+		class="tab h-11"
 		class:tab-active={tab === 'papelera'}
 		onclick={() => (tab = 'papelera')}
 	>

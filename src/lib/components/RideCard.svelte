@@ -214,7 +214,7 @@
 						bind:value={priceInput}
 						inputmode="decimal"
 						pattern="^\d*\.?\d*$"
-						class="input input-bordered w-full pl-9 text-xl font-bold"
+						class="input input-bordered h-12 w-full pl-9 text-xl font-bold"
 						onkeydown={(e) => {
 							if (e.key === 'Enter') savePrice();
 							if (e.key === 'Escape') editingPrice = false;
@@ -223,7 +223,7 @@
 					<span class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-base-content/60 font-medium">$</span>
 				</div>
 				<button
-					class="btn btn-accent btn-square"
+					class="btn btn-accent btn-square size-12"
 					onclick={savePrice}
 					disabled={savingPrice}
 					aria-label="Guardar precio"
@@ -235,7 +235,7 @@
 					{/if}
 				</button>
 				<button
-					class="btn btn-ghost btn-square"
+					class="btn btn-ghost btn-square size-12"
 					onclick={() => (editingPrice = false)}
 					aria-label="Cancelar"
 				>
@@ -388,7 +388,7 @@
 			</button>
 
 			<div class="border-t border-base-300 px-5 pt-3 pwa-sheet-footer">
-				<button class="btn btn-ghost w-full" onclick={() => (menuOpen = false)}>Cancelar</button>
+				<button class="btn btn-ghost h-12 w-full" onclick={() => (menuOpen = false)}>Cancelar</button>
 			</div>
 		</div>
 
