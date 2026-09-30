@@ -4,6 +4,7 @@
 	import { fly } from 'svelte/transition';
 	import { cubicIn, cubicOut } from 'svelte/easing';
 	import { pendingStore } from '$lib/stores/pending.svelte';
+	import { networkState } from '$lib/stores/network.svelte';
 	import { sileo } from 'svelte-sileo';
 	import AddRideSheet from '$lib/components/AddRideSheet.svelte';
 	import RideCard, { type RideData } from '$lib/components/RideCard.svelte';
@@ -80,6 +81,9 @@
 	}
 
 	async function onSaved() {
+		// Offline the refetch fails into SvelteKit's error page, and a queued ride
+		// already shows from pendingStore. syncPending refetches once it's sent.
+		if (!networkState.online) return;
 		await invalidateAll();
 	}
 
