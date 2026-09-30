@@ -201,7 +201,7 @@
 
 <button
 	onclick={openCreate}
-	class="btn btn-primary btn-circle btn-lg fixed pwa-fab right-6 shadow-lg z-20"
+	class="btn btn-primary btn-circle btn-lg fixed pwa-fab right-4 shadow-lg z-20"
 	aria-label="Agregar carrera"
 >
 	<svg

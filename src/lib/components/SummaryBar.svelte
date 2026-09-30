@@ -47,19 +47,21 @@
 </script>
 
 <div class="card bg-brand-indigo shadow-sm sticky top-16 z-20 mb-4">
-	<div class="card-body p-4 py-3">
-		<div class="flex items-center justify-around">
-			<div class="text-center">
-				<p class="text-2xl font-bold">{count}</p>
+	<div class="card-body p-4 gap-3">
+		<!-- Labels above their values, so both columns share a top edge however
+		     many lines the total stacks under it -->
+		<div class="flex items-start">
+			<div class="flex-1 text-center">
 				<p class="text-xs text-base-content/60 uppercase tracking-wide">Pendientes</p>
+				<p class="text-2xl font-bold">{count}</p>
 			</div>
-			<div class="w-px h-8 bg-base-300"></div>
-			<div class="text-center">
+			<div class="w-px self-stretch bg-base-content/15"></div>
+			<div class="flex-1 text-center">
+				<p class="text-xs text-base-content/60 uppercase tracking-wide">Total</p>
 				<p class="text-2xl font-bold">{totalUsdFmt}</p>
 				{#if totalVes}
 					<p class="text-sm text-base-content/60">{totalVes}</p>
 				{/if}
-				<p class="text-xs text-base-content/60 uppercase tracking-wide">Total</p>
 				{#if stale}
 					<p class="text-xs text-warning">tasa de ayer</p>
 				{/if}
@@ -67,10 +69,12 @@
 		</div>
 
 		{#if count > 0 && (onPayAll || onExport)}
-			<div class="border-t border-base-300 mt-2 pt-2 flex items-center justify-between">
+			<!-- -mb-2, and -ml-3 / -mr-3 on the buttons: the ghost buttons' text lines
+			     up with the content edges, and the 44px boxes don't pad out the bottom -->
+			<div class="border-t border-base-content/15 pt-2 -mb-2 flex items-center justify-between">
 				{#if onExport}
 					<button
-						class="btn btn-ghost btn-xs text-base-content/60 gap-1"
+						class="btn btn-ghost h-11 px-3 -ml-3 text-base-content/60 gap-1"
 						onclick={onExport}
 						aria-label="Exportar resumen"
 					>
@@ -84,7 +88,7 @@
 				{/if}
 
 				{#if onPayAll}
-					<button class="btn btn-ghost btn-xs text-base-content/60" onclick={() => (confirming = true)}>
+					<button class="btn btn-ghost h-11 px-3 -mr-3 text-base-content/60" onclick={() => (confirming = true)}>
 						Marcar todo pagado
 					</button>
 				{/if}

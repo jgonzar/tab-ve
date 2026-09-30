@@ -91,7 +91,8 @@
 	}
 </script>
 
-<div class="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
+<!-- mb-4: the 16px section gap down to the summary bar -->
+<div class="flex gap-2 overflow-x-auto no-scrollbar mb-4">
 	{#each ROUTES as route, i}
 		<button
 			class="badge badge-lg shrink-0 gap-1 cursor-pointer transition-all duration-150 border"
