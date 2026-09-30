@@ -233,7 +233,7 @@
 	<div class="modal-box bg-base-200 max-h-[92vh] flex flex-col p-0">
 		<!-- Header -->
 		<div class="flex items-center justify-between px-4 py-3 border-b border-base-300 shrink-0">
-			<h3 class="font-bold text-lg">{editViaje ? 'Editar Carrera' : 'Nueva Carrera'}</h3>
+			<h3 class="font-bold text-xl">{editViaje ? 'Editar carrera' : 'Nueva carrera'}</h3>
 			<button
 				type="button"
 				onclick={close}
@@ -407,7 +407,7 @@
 				{#if submitting}
 					<span class="loading loading-spinner loading-sm"></span>
 				{:else}
-					{editViaje ? 'Guardar Cambios' : 'Guardar Carrera'}
+					{editViaje ? 'Guardar cambios' : 'Guardar carrera'}
 				{/if}
 			</button>
 		</div>

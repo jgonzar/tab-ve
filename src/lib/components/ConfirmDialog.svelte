@@ -56,7 +56,7 @@
 			</svg>
 		</button>
 
-		<h3 class="font-bold text-lg pr-14">{title}</h3>
+		<h3 class="font-bold text-xl pr-14">{title}</h3>
 
 		{#if children}
 			<p class="pt-3 text-base text-base-content/80">{@render children()}</p>
