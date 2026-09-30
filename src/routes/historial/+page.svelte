@@ -23,7 +23,9 @@
 	}
 </script>
 
-<div class="tabs tabs-border mb-4 px-4 pt-2">
+<!-- No inset of its own: main's 16px gutter already lines the first tab up
+     with the cards, and mb-4 is the 16px section gap -->
+<div class="tabs tabs-border mb-4">
 	<button
 		class="tab h-11"
 		class:tab-active={tab === 'pagadas'}
