@@ -12,13 +12,13 @@
 	} = $props();
 </script>
 
-<div class="flex gap-2 overflow-x-auto no-scrollbar pt-2 pb-1">
+<!-- -mx-4 px-4: bleeds to the sheet edge while the first chip stays on the
+     sheet's 16px inset. py-1 is room for the focus ring inside the scroll box. -->
+<div class="-mx-4 px-4 py-1 flex gap-2 overflow-x-auto no-scrollbar">
 	{#each QUICK_LOCATIONS as nombre}
 		<button
 			type="button"
-			class="badge badge-lg min-h-10 px-4 shrink-0 cursor-pointer transition-colors"
-			class:badge-primary={value?.nombre === nombre}
-			class:badge-outline={value?.nombre !== nombre}
+			class="badge h-11 px-4 text-sm shrink-0 cursor-pointer transition-colors {value?.nombre === nombre ? 'badge-primary' : 'badge-outline border-base-content/20'}"
 			onclick={() => onSelect({ id: null, nombre })}
 		>
 			{nombre}

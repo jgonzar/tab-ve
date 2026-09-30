@@ -91,13 +91,13 @@
 	}
 </script>
 
-<!-- mb-4: the 16px section gap down to the summary bar -->
-<div class="flex gap-2 overflow-x-auto no-scrollbar mb-4">
+<!-- -mx-4 px-4: the row scrolls out to the screen edge while the first chip
+     stays on the gutter. py-1 leaves room for the focus ring inside the scroll
+     box; -mt-1 and mb-3 pay it back, keeping the 16px gap to the summary bar. -->
+<div class="-mx-4 px-4 -mt-1 py-1 mb-3 flex gap-2 overflow-x-auto no-scrollbar">
 	{#each ROUTES as route, i}
 		<button
-			class="badge badge-lg shrink-0 gap-1 cursor-pointer transition-all duration-150 border"
-			class:badge-primary={confirming === i}
-			class:badge-outline={confirming !== i}
+			class="badge h-11 px-4 text-sm shrink-0 gap-1 cursor-pointer transition-all duration-150 border {confirming === i ? 'badge-primary' : 'badge-outline border-base-content/20'}"
 			class:opacity-50={loading !== null && loading !== i}
 			disabled={loading !== null}
 			onclick={() => tap(i)}
@@ -105,9 +105,9 @@
 			{#if loading === i}
 				<span class="loading loading-spinner loading-xs"></span>
 			{:else if confirming === i}
-				<span class="text-xs font-semibold">¿Confirmar?</span>
+				<span class="font-semibold">¿Confirmar?</span>
 			{:else}
-				<span class="text-xs">{route.label}</span>
+				<span>{route.label}</span>
 			{/if}
 		</button>
 	{/each}
