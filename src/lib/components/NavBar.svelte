@@ -66,7 +66,7 @@
 
 			{#if menuOpen}
 				<ul class="absolute right-0 top-full mt-2 menu bg-base-200 rounded-box shadow-lg z-50 w-52 p-2 gap-1">
-					<li class="menu-title text-xs">Cambiar usuario</li>
+					<li class="menu-title text-xs text-base-content/60">Cambiar usuario</li>
 					{#each USERS as user}
 						<li>
 							<!-- content-center: the menu row grid stacks from the top otherwise -->
