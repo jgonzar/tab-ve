@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { userState, USERS } from '$lib/stores/user.svelte';
+	import { CURRENT_ROW } from '$lib/current';
 	import Wordmark from './Wordmark.svelte';
 
 	let menuOpen = $state(false);
@@ -31,15 +32,15 @@
 		<Wordmark class="h-6 mx-2" />
 		<a
 			href="/"
-			class="btn btn-ghost h-11"
-			class:btn-active={page.url.pathname === '/'}
+			class={['btn btn-ghost h-11', page.url.pathname === '/' && CURRENT_ROW]}
+			aria-current={page.url.pathname === '/' ? 'page' : undefined}
 		>
 			Inicio
 		</a>
 		<a
 			href="/historial"
-			class="btn btn-ghost h-11"
-			class:btn-active={page.url.pathname === '/historial'}
+			class={['btn btn-ghost h-11', page.url.pathname === '/historial' && CURRENT_ROW]}
+			aria-current={page.url.pathname === '/historial' ? 'page' : undefined}
 		>
 			Historial
 		</a>
@@ -68,10 +69,11 @@
 					<li class="menu-title text-xs">Cambiar usuario</li>
 					{#each USERS as user}
 						<li>
+							<!-- content-center: the menu row grid stacks from the top otherwise -->
 							<button
-								class="min-h-11"
+								class={['min-h-11 content-center', userState.activeUser?.id === user.id && ['menu-active', CURRENT_ROW]]}
+								aria-current={userState.activeUser?.id === user.id ? 'true' : undefined}
 								onclick={() => { userState.setUser(user); menuOpen = false; }}
-								class:bg-base-300={userState.activeUser?.id === user.id}
 							>
 								<span class="badge badge-primary badge-sm font-bold">{user.iniciales}</span>
 								{user.nombre}
