@@ -537,7 +537,7 @@ La app se puede agregar a la pantalla de inicio (iOS con Safari, Android con Chr
 
 ### 7.2 Cola sin Conexión
 
-- Solo las **carreras nuevas** (formulario y carreras rápidas) se encolan. Si no hay conexión al guardar, o la conexión se cae durante la petición, la carrera se guarda en `localStorage` bajo la clave `tab_pending_rides` y un toast avisa que se enviará al volver la conexión.
+- Solo las **carreras nuevas** (formulario y carreras rápidas) se encolan. Si no hay conexión al guardar, o la conexión se cae durante la petición, la carrera se guarda en `localStorage` bajo la clave `tab_pending_rides`. En el formulario, un toast avisa que se enviará al volver la conexión. En una carrera rápida, el aviso aparece en el propio modal (ver Sección 3.9), sin toast, y solo se encola si no hay conexión al guardar: si la petición falla, el modal muestra el error con "Reintentar".
 - Las carreras en cola aparecen arriba en Inicio, atenuadas al 80 % y con un indicador "Pendiente". Cuentan en los totales, pero no se pueden editar, pagar ni eliminar, y no entran en el recibo exportado.
 - La cola se envía en orden al abrir la app con conexión y cada vez que el navegador emite el evento `online`. Cada carrera que el servidor acepta sale de la cola; las que fallan se quedan para el siguiente intento.
 - Editar, pagar, eliminar y restaurar no se encolan: requieren conexión.
