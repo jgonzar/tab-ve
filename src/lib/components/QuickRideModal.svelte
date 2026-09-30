@@ -432,7 +432,7 @@
 							{#if tail === 'confirm' || tail === 'error'}
 								<button
 									bind:this={registerBtn}
-									class="btn btn-primary mt-5 h-11 w-full"
+									class="btn btn-accent mt-5 h-11 w-full"
 									onclick={register}
 								>
 									{tail === 'error' ? 'Reintentar' : 'Registrar carrera'}
