@@ -9,7 +9,7 @@ The product requirements, in Spanish, are in [docs/prd.md](docs/prd.md). The app
 
 ## Core Features
 * **Ride Tracking:** Log origin, ordered stops and destination, an optional USD price, wait time, notes and an editable ride date. New locations typed into the search become shared entries.
-* **Quick Rides:** One-tap presets for the most frequent routes, with a second tap to confirm.
+* **Quick Rides:** Presets for the most frequent routes. A tap opens a confirmation card with the route, and "Registrar carrera" saves it. The card then shows the result: saved or queued offline (both close on their own), or an error with "Reintentar".
 * **Currency Conversion:** The official BCV rate comes from `ve.dolarapi.com`, is cached server-side for 24 hours, and shows a staleness indicator when the cached rate is out of date.
 * **Payment Management:** A summary bar with the pending count and total, per-ride "mark as paid", "pay all" behind a confirmation, and a History page for paid rides. A paid ride can be sent back to pending.
 * **Soft Delete:** Deleted rides go to a trash tab in History and can be restored.

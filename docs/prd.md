@@ -234,8 +234,13 @@ La tasa se obtiene del lado del servidor (`src/lib/server/bcv.ts`) para evitar p
 
 ### 3.9 Carreras Rápidas
 
-- Sobre la barra de resumen hay atajos de un toque para las rutas más frecuentes (por ejemplo El Rocío → El Limón). El primer toque pide confirmación y el segundo crea la carrera, sin precio y con la fecha actual. La confirmación se cancela sola a los 3 segundos.
-- Sin conexión, la carrera rápida entra en la misma cola que el formulario (ver Sección 7.2).
+- Sobre la barra de resumen hay atajos para las rutas más frecuentes (por ejemplo El Rocío → El Limón). Tocar uno abre un modal centrado con forma de tarjeta con pestaña: la pestaña lleva un icono y el título "¿Registrar esta carrera?", y la tarjeta muestra los clientes (JA y Marcela), "Hoy" con la hora, y la ruta con "Desde", "Hasta" y "vía …" para las paradas.
+- "Registrar carrera" crea la carrera sin precio, con la fecha actual y para los dos clientes. "Cancelar", tocar el fondo o Escape cierran el modal sin crear nada.
+- Al pulsar "Registrar carrera" los botones se pliegan y la pestaña muestra "Registrando…" con un indicador de carga. Mientras guarda, el modal no se puede cerrar.
+- **Guardada en el servidor:** el título pasa a "Carrera registrada" con un ✓. El modal se cierra solo a los 1,5 segundos, o antes con un toque en cualquier parte.
+- **Sin conexión:** la carrera rápida entra en la misma cola que el formulario (ver Sección 7.2). El modal muestra un reloj, "Carrera guardada" y "Se enviará cuando vuelva la conexión.", y se cierra solo a los 2,5 segundos, o antes con un toque.
+- **Si la petición falla:** la pestaña se pone en rojo con "No se pudo registrar" y el aviso "Revisa tu conexión e intenta de nuevo.". Vuelven los botones: "Reintentar" reenvía la misma carrera y "Cancelar" cierra el modal. La carrera no se encola.
+- Las carreras rápidas no muestran toasts: el modal es la confirmación.
 
 ---
 
