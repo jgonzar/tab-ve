@@ -247,14 +247,18 @@
 		</div>
 
 		<!-- Scrollable form body -->
-		<div class="overflow-y-auto flex-1 px-4 py-4 space-y-5">
+		<!-- Every field uses one label style (text-sm font-medium /80), 6px from
+		     label to control and 20px between fields, inside "Ruta" too. "Ruta"
+		     is the only group heading. -->
+		<div class="overflow-y-auto flex-1 px-4 py-4 flex flex-col gap-5">
 			{#key formKey}
 				<!-- Ruta -->
-				<div class="space-y-2">
-					<label class="text-base font-semibold text-base-content/80">Ruta</label>
+				<div class="flex flex-col gap-5">
+					<!-- -mb-2: 12px from the heading to its first field -->
+					<label class="-mb-2 text-base font-semibold text-base-content/80">Ruta</label>
 
-					<div class="space-y-1">
-						<span class="text-sm text-base-content/60">Origen</span>
+					<div class="flex flex-col gap-1.5">
+						<span class="text-sm font-medium text-base-content/80">Origen</span>
 						<LocationSelect bind:value={origen} {locations} placeholder="¿Desde dónde?" />
 						<LocationChips value={origen} onSelect={(loc) => (origen = loc)} />
 						{#if errors.origen}
@@ -263,29 +267,31 @@
 					</div>
 
 					{#each paradas as parada (parada.key)}
-						<div class="flex gap-2 items-start">
-							<!-- min-w-0: a flex child defaults to min-width:auto, so the chips row's
-							     intrinsic width would push this column past the sheet and scroll the
-							     whole form sideways instead of just the chips. -->
-							<div class="flex-1 min-w-0 space-y-1">
-								<span class="text-sm text-base-content/60">Parada</span>
-								<LocationSelect
-									bind:value={parada.location}
-									{locations}
-									placeholder="¿Dónde para?"
-								/>
-								<LocationChips value={parada.location} onSelect={(loc) => (parada.location = loc)} />
+						<div class="flex flex-col gap-1.5">
+							<span class="text-sm font-medium text-base-content/80">Parada</span>
+							<!-- The remove button sits beside the input only, so the chips
+							     below get the full width and bleed like the other rows.
+							     min-w-0: a flex child defaults to min-width:auto. -->
+							<div class="flex items-center gap-2">
+								<div class="flex-1 min-w-0">
+									<LocationSelect
+										bind:value={parada.location}
+										{locations}
+										placeholder="¿Dónde para?"
+									/>
+								</div>
+								<button
+									type="button"
+									onclick={() => removeParada(parada.key)}
+									class="btn btn-circle size-11 shrink-0 bg-base-300 border-none text-error hover:bg-error hover:text-error-content"
+									aria-label="Eliminar parada"
+								>
+									<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+										<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+									</svg>
+								</button>
 							</div>
-							<button
-								type="button"
-								onclick={() => removeParada(parada.key)}
-								class="btn btn-circle size-11 shrink-0 mt-7 bg-base-300 border-none text-error hover:bg-error hover:text-error-content"
-								aria-label="Eliminar parada"
-							>
-								<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-									<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-								</svg>
-							</button>
+							<LocationChips value={parada.location} onSelect={(loc) => (parada.location = loc)} />
 						</div>
 					{/each}
 
@@ -293,16 +299,18 @@
 						<p class="text-error text-sm">{errors.paradas}</p>
 					{/if}
 
+					<!-- -my-2 -ml-3: the 44px box doesn't widen the gaps around it, and
+					     the text sits on the 16px inset -->
 					<button
 						type="button"
 						onclick={addParada}
-						class="btn btn-ghost h-11 text-sm text-base-content/60 px-2 -ml-2"
+						class="btn btn-ghost h-11 self-start -my-2 -ml-3 px-3 text-sm text-base-content/60"
 					>
 						+ Agregar parada
 					</button>
 
-					<div class="space-y-1">
-						<span class="text-sm text-base-content/60">Destino</span>
+					<div class="flex flex-col gap-1.5">
+						<span class="text-sm font-medium text-base-content/80">Destino</span>
 						<LocationSelect bind:value={destino} {locations} placeholder="¿A dónde?" />
 						<LocationChips value={destino} onSelect={(loc) => (destino = loc)} />
 						{#if errors.destino}
@@ -312,8 +320,8 @@
 				</div>
 
 				<!-- Precio -->
-				<div class="space-y-1">
-					<label class="text-base font-semibold text-base-content/80">Precio</label>
+				<div class="flex flex-col gap-1.5">
+					<label class="text-sm font-medium text-base-content/80">Precio</label>
 					<!-- The prefix comes after the input so it paints on top: DaisyUI's
 					     .input is position: relative and would otherwise cover it. -->
 					<div class="relative">
@@ -333,8 +341,8 @@
 				</div>
 
 				<!-- Espera (opcional) -->
-				<div class="space-y-1">
-					<label class="text-base font-semibold text-base-content/80">
+				<div class="flex flex-col gap-1.5">
+					<label class="text-sm font-medium text-base-content/80">
 						Tiempo de espera
 						<span class="text-base-content/60 font-normal">(opcional)</span>
 					</label>
@@ -352,8 +360,8 @@
 				</div>
 
 				<!-- Notas (opcional) -->
-				<div class="space-y-1">
-					<label class="text-base font-semibold text-base-content/80">
+				<div class="flex flex-col gap-1.5">
+					<label class="text-sm font-medium text-base-content/80">
 						Notas
 						<span class="text-base-content/60 font-normal">(opcional)</span>
 					</label>
@@ -366,8 +374,8 @@
 				</div>
 
 				<!-- Fecha -->
-				<div class="space-y-1">
-					<label for="fecha-viaje" class="text-base font-semibold text-base-content/80">Fecha</label>
+				<div class="flex flex-col gap-1.5">
+					<label for="fecha-viaje" class="text-sm font-medium text-base-content/80">Fecha</label>
 					<input
 						id="fecha-viaje"
 						type="date"
