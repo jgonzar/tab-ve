@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { invalidateAll } from '$app/navigation';
 	import { sileo } from 'svelte-sileo';
+	import { networkState } from '$lib/stores/network.svelte';
 
 	let { children } = $props();
 
@@ -59,6 +60,14 @@
 
 		if (pull < THRESHOLD) {
 			pull = 0;
+			return;
+		}
+
+		// Offline the refetch fails into SvelteKit's error page rather than
+		// throwing, so don't try: say so and let the pull spring back
+		if (!networkState.online) {
+			pull = 0;
+			sileo.error({ title: 'No se pudo actualizar', description: 'Revisa tu conexión e intenta de nuevo.' });
 			return;
 		}
 

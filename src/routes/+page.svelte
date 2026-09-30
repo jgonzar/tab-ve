@@ -80,10 +80,12 @@
 		showSheet = true;
 	}
 
-	async function onSaved() {
-		// Offline the refetch fails into SvelteKit's error page, and a queued ride
-		// already shows from pendingStore. syncPending refetches once it's sent.
-		if (!networkState.online) return;
+	async function onSaved(_viaje?: unknown, queued = false) {
+		// A queued ride already shows from pendingStore, and syncPending refetches
+		// once it's sent. Refetching with no connection fails into SvelteKit's
+		// error page: `queued` covers a drop mid-request, before the browser has
+		// noticed it's offline.
+		if (queued || !networkState.online) return;
 		await invalidateAll();
 	}
 

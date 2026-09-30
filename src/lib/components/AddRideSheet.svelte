@@ -21,7 +21,8 @@
 	}: {
 		open: boolean;
 		editViaje?: RideData | null;
-		onSaved?: (viaje: unknown) => void;
+		/** `queued` is true when the ride went to the offline queue instead of the server. */
+		onSaved?: (viaje: unknown, queued?: boolean) => void;
 	} = $props();
 
 	// No longer collected in the form — see $lib/rideDefaults. Kept in state so an
@@ -174,7 +175,7 @@
 		locationCache = null;
 		sileo.success({ title: 'Carrera guardada', description: 'Se enviará cuando vuelva la conexión.' });
 		close();
-		onSaved?.(pending);
+		onSaved?.(pending, true);
 	}
 
 	async function submit() {
