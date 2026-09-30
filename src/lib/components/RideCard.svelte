@@ -206,8 +206,8 @@
 		<!-- Price edit: full-width overlay at top of card when active -->
 		{#if editingPrice}
 			<div class="flex items-center gap-2">
+				<!-- The prefix comes after the input so it paints on top (see AddRideSheet) -->
 				<div class="relative flex-1">
-					<span class="absolute left-3 top-1/2 -translate-y-1/2 text-base-content/60 font-medium">$</span>
 					<input
 						use:focusAndSelect
 						type="text"
@@ -220,6 +220,7 @@
 							if (e.key === 'Escape') editingPrice = false;
 						}}
 					/>
+					<span class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-base-content/60 font-medium">$</span>
 				</div>
 				<button
 					class="btn btn-accent btn-square"

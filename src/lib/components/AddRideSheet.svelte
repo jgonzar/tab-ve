@@ -314,8 +314,9 @@
 				<!-- Precio -->
 				<div class="space-y-1">
 					<label class="text-base font-semibold text-base-content/80">Precio</label>
+					<!-- The prefix comes after the input so it paints on top: DaisyUI's
+					     .input is position: relative and would otherwise cover it. -->
 					<div class="relative">
-						<span class="absolute left-3 top-1/2 -translate-y-1/2 text-base-content/60 text-base">$</span>
 						<input
 							type="text"
 							bind:value={precioUsd}
@@ -324,6 +325,7 @@
 							placeholder="0.00"
 							class="input input-bordered input-lg w-full pl-8"
 						/>
+						<span class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-base-content/60 text-base">$</span>
 					</div>
 					{#if errors.precio}
 						<p class="text-error text-sm">{errors.precio}</p>
