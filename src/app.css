@@ -24,7 +24,11 @@
      base-300  deepest surface step: borders, inputs, pressed rows, toasts
    `neutral` is DaisyUI's pressed/active fill (menu rows), so it takes base-300.
    `secondary` is unused and mirrors primary, so a stray class stays on-brand.
-   Shape tokens are DaisyUI's stock dark values: only the colours change.
+   Radii follow the spacing system (docs: UI audit): 16px surfaces (cards,
+   summary bar, sheets, dialogs, dropdowns), 12px controls (buttons, inputs),
+   and fully rounded chips and badges. The other shape tokens are DaisyUI's
+   stock dark values. `--size-field` stays at 0.25rem on purpose: touch
+   targets are sized per control, so form fields keep their 48px.
 --------------------------------------------------------------------------- */
 @plugin "daisyui/theme" {
 	name: "tab";
@@ -53,9 +57,9 @@
 	--color-error: #f66b71;
 	--color-error-content: #0b0a29;
 
-	--radius-selector: 0.5rem;
-	--radius-field: 0.25rem;
-	--radius-box: 0.5rem;
+	--radius-selector: 2rem;
+	--radius-field: 0.75rem;
+	--radius-box: 1rem;
 	--size-selector: 0.25rem;
 	--size-field: 0.25rem;
 	--border: 1px;

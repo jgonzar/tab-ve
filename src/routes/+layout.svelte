@@ -19,8 +19,8 @@
 	// title — that only becomes illegible on a white pill, which is what the
 	// playbook warns about. fill is --color-base-300, the top step of the Tab
 	// theme's surface ramp, so the toast reads as app chrome rather than a
-	// white card dropped on top of it. roundness 16 matches the rounded-2xl
-	// on the ride cards. The `!` is Tailwind v4's important modifier, needed
+	// white card dropped on top of it. roundness 16 matches --radius-box, the
+	// radius of every surface. The `!` is Tailwind v4's important modifier, needed
 	// to beat the package's baked-in colours.
 	const toasterOptions = {
 		duration: 5000,
