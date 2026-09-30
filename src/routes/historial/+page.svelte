@@ -5,6 +5,10 @@
 
 	let { data } = $props();
 
+	// DaisyUI dims inactive tabs to 50%; the floor for text is 60%
+	const ACTIVE_TAB = 'text-base-content before:text-accent';
+	const INACTIVE_TAB = 'text-base-content/60 hover:text-base-content';
+
 	let tab = $state<'pagadas' | 'papelera'>('pagadas');
 	let hiddenIds = $state(new Set<number>());
 
@@ -24,23 +28,25 @@
 </script>
 
 <!-- No inset of its own: main's 16px gutter already lines the first tab up
-     with the cards, and mb-4 is the 16px section gap -->
+     with the cards, and mb-4 is the 16px section gap.
+     The active tab's underline is its ::before, drawn in currentColor, so
+     before:text-accent turns only the underline Lime. -->
 <div class="tabs tabs-border mb-4">
 	<button
-		class="tab h-11"
+		class={['tab h-11', tab === 'pagadas' ? ACTIVE_TAB : INACTIVE_TAB]}
 		class:tab-active={tab === 'pagadas'}
 		onclick={() => (tab = 'pagadas')}
 	>
 		Pagadas
 	</button>
 	<button
-		class="tab h-11"
+		class={['tab h-11', tab === 'papelera' ? ACTIVE_TAB : INACTIVE_TAB]}
 		class:tab-active={tab === 'papelera'}
 		onclick={() => (tab = 'papelera')}
 	>
 		Papelera
 		{#if data.borrados.length > 0}
-			<span class="badge badge-sm badge-neutral ml-1">{data.borrados.length}</span>
+			<span class="badge badge-sm badge-primary ml-1">{data.borrados.length}</span>
 		{/if}
 	</button>
 </div>
