@@ -14,9 +14,11 @@
 	 * silhouette). Open it with `open(route, chip)`. It asks, then runs the
 	 * submit and morphs through saving into success, queued or error.
 	 *
-	 * Motion only touches transform, opacity, clip-path and SVG dash offsets.
-	 * Height changes are never animated: the card's top is pinned when it opens,
-	 * and a fold is a clip-path wipe on the whole shape, with the DOM swapped
+	 * Open and close are transform and opacity only, on promoted layers. The
+	 * shadow is a box-shadow painted once on those layers (never a filter over
+	 * moving content), so nothing repaints while they move. The fold on press
+	 * is a clip-path wipe on the whole shape. Height changes are never
+	 * animated: the card's top is pinned when it opens, and the DOM is swapped
 	 * in the same frame the wipe ends (or starts, when growing). So the tab
 	 * never moves.
 	 */
@@ -39,8 +41,10 @@
 	};
 
 	// Timings (ms)
-	const TAB_MS = 150; // open: the tab first
-	const CARD_MS = 220; // then the card grows down out of it
+	const OPEN_MS = 280; // open: tab and card rise and fade in together...
+	const OPEN_STAGGER_MS = 60; // ...the card 60ms behind the tab (340ms in all)
+	const CLOSE_MS = 180; // close: the reverse, card first...
+	const CLOSE_STAGGER_MS = 40; // ...the tab 40ms behind (220ms in all)
 	const FOLD_MS = 200; // the actions fold away on press
 	const GROW_MS = 220; // the note (and error actions) unfold
 	const MIN_SAVING_MS = 400; // the ring never just flashes
@@ -48,7 +52,8 @@
 	const FADE_MS = 200; // reduced motion: open and close are a plain fade
 	const AUTO_CLOSE_MS = { success: 1500, queued: 2500 };
 	const EASE_OUT = 'cubic-bezier(0.2, 0, 0, 1)';
-	const EASE_IN = 'cubic-bezier(0.4, 0, 1, 1)';
+	const EASE_OUT_EXPO = 'cubic-bezier(0.16, 1, 0.3, 1)';
+	const EASE_IN_EXPO = 'cubic-bezier(0.7, 0, 0.84, 0)'; // its mirror, for the close
 	const EASE_IN_OUT = 'cubic-bezier(0.4, 0, 0.2, 1)';
 
 	/** The card radius (rounded-3xl): clip-path wipes keep the corners round. */
@@ -72,7 +77,8 @@
 	let overlay = $state<HTMLDivElement>();
 	let backdrop = $state<HTMLDivElement>();
 	let shell = $state<HTMLDivElement>();
-	let tabEl = $state<HTMLDivElement>();
+	let tabGroup = $state<HTMLDivElement>();
+	let bodyPlate = $state<HTMLDivElement>();
 	let bodyEl = $state<HTMLDivElement>();
 	let tailEl = $state<HTMLDivElement>();
 	let registerBtn = $state<HTMLButtonElement>();
@@ -124,20 +130,39 @@
 			overlay!.animate([{ opacity: 0 }, { opacity: 1 }], { duration: FADE_MS, easing: 'ease-out' });
 			return;
 		}
-		backdrop!.animate([{ opacity: 0 }, { opacity: 1 }], { duration: TAB_MS + CARD_MS, easing: 'ease-out' });
-		tabEl!.animate([{ opacity: 0, transform: 'scale(0.85)' }, { opacity: 1, transform: 'none' }], {
-			duration: TAB_MS,
-			easing: EASE_OUT
-		});
-		for (const join of shell!.querySelectorAll('.qr-join')) {
-			join.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 60, delay: TAB_MS, fill: 'backwards' });
-		}
-		bodyEl!.animate([{ clipPath: clip('100%') }, { clipPath: clip('0px') }], {
-			duration: CARD_MS,
-			delay: TAB_MS,
-			easing: EASE_OUT,
-			fill: 'backwards'
-		});
+		const anims = await rise(true);
+		anims.forEach((a) => a.cancel()); // settled at rest: hand back to plain CSS
+	}
+
+	const HIDDEN = { opacity: 0, transform: 'translateY(8px) scale(0.96)' };
+	const SHOWN = { opacity: 1, transform: 'none' };
+
+	/**
+	 * Open (show) or close: the tab and the card (with its shadow plate) rise or
+	 * sink as one motion, one lagging the other slightly. Both scale about the
+	 * seam between them, so they stay joined.
+	 */
+	async function rise(show: boolean) {
+		const tab = [tabGroup!];
+		const card = [bodyPlate!, bodyEl!];
+		const [lead, lag] = show ? [tab, card] : [card, tab];
+		const duration = show ? OPEN_MS : CLOSE_MS;
+		const delay = show ? OPEN_STAGGER_MS : CLOSE_STAGGER_MS;
+		const easing = show ? EASE_OUT_EXPO : EASE_IN_EXPO;
+		const frames = show ? [HIDDEN, SHOWN] : [SHOWN, HIDDEN];
+		for (const el of [...lead, ...lag]) el.style.willChange = 'transform, opacity';
+		const anims = [
+			backdrop!.animate([{ opacity: show ? 0 : 1 }, { opacity: show ? 1 : 0 }], {
+				duration: duration + delay,
+				easing: show ? 'ease-out' : 'ease-in',
+				fill: 'forwards'
+			}),
+			...lead.map((el) => el.animate(frames, { duration, easing, fill: 'both' })),
+			...lag.map((el) => el.animate(frames, { duration, delay, easing, fill: 'both' }))
+		];
+		await Promise.all(anims.map((a) => a.finished)).catch(() => {});
+		for (const el of [...lead, ...lag]) el.style.willChange = '';
+		return anims;
 	}
 
 	async function close() {
@@ -149,22 +174,9 @@
 		if (reduced) {
 			await overlay!.animate([{ opacity: 1 }, { opacity: 0 }], { duration: FADE_MS, easing: 'ease-in', fill: 'forwards' }).finished;
 		} else {
-			// The reverse of open: the card folds up into the tab, then the tab goes
-			for (const el of [tabEl, bodyEl, shell]) el?.getAnimations().forEach((a) => a.cancel());
-			backdrop!.animate([{ opacity: 1 }, { opacity: 0 }], { duration: TAB_MS + CARD_MS, easing: 'ease-in', fill: 'forwards' });
-			for (const join of shell!.querySelectorAll('.qr-join')) {
-				join.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 60, delay: CARD_MS - 60, fill: 'forwards' });
-			}
-			await bodyEl!.animate([{ clipPath: clip('0px') }, { clipPath: clip('100%') }], {
-				duration: CARD_MS,
-				easing: EASE_IN,
-				fill: 'forwards'
-			}).finished;
-			await tabEl!.animate([{ opacity: 1, transform: 'none' }, { opacity: 0, transform: 'scale(0.85)' }], {
-				duration: TAB_MS,
-				easing: EASE_IN,
-				fill: 'forwards'
-			}).finished;
+			// An open still settling (a quick Escape) stops where it is
+			for (const el of [backdrop, tabGroup, bodyPlate, bodyEl, shell]) el?.getAnimations().forEach((a) => a.cancel());
+			await rise(false); // the fills hold it hidden until it unmounts
 		}
 
 		window.removeEventListener('keydown', onKeydown);
@@ -303,9 +315,8 @@
 	>
 		<div bind:this={backdrop} class="absolute inset-0 bg-black/60" aria-hidden="true"></div>
 
-		<!-- The shadow sits outside the clipped shape, so it follows every wipe -->
 		<div
-			class="relative w-full max-w-sm drop-shadow-[0_12px_30px_rgb(0_0_0/0.55)]"
+			class="relative w-full max-w-sm"
 			style="margin-top: max({top}px, calc(var(--safe-top) + 1rem))"
 		>
 			<div
@@ -314,14 +325,24 @@
 				aria-modal="true"
 				aria-labelledby={titleId}
 				tabindex="-1"
-				class="outline-none"
+				class="relative isolate outline-none"
 			>
-				<!-- Header tab: 40px tall, 18px top corners, 12px inverse joins into the card -->
+				<!-- The card's shadow, on a plate behind everything: the tab paints over
+				     its top edge, as a drop-shadow of the whole shape would. It moves
+				     with the card. The plate is positioned, so the tab group (isolate) and the
+				     body (relative) are positioned too, to paint after it. -->
+				<div
+					bind:this={bodyPlate}
+					class="pointer-events-none absolute inset-x-0 top-[39px] bottom-0 origin-top rounded-3xl shadow-[0_12px_30px_rgb(0_0_0/0.55)]"
+					aria-hidden="true"
+				></div>
+
+				<!-- Header tab: 40px tall, 18px top corners, 12px inverse joins into the
+				     card. The joins come after the tab so they paint over its shadow;
+				     the card paints over the rest of it. -->
 				<div class="flex justify-center">
-					<div class="relative">
-						<span class="qr-join qr-join-l" aria-hidden="true"></span>
-						<span class="qr-join qr-join-r" aria-hidden="true"></span>
-						<div bind:this={tabEl} class="h-10 origin-bottom rounded-t-[18px] bg-base-200 px-4 pt-1.5">
+					<div bind:this={tabGroup} class="relative isolate origin-bottom">
+						<div class="h-10 rounded-t-[18px] bg-base-200 px-4 pt-1.5 shadow-[0_12px_30px_rgb(0_0_0/0.55)]">
 							<!-- Every title is laid out, invisibly, so the tab is as wide as
 							     the longest one and never changes width between states -->
 							<div class="grid">
@@ -353,10 +374,12 @@
 								{/key}
 							</div>
 						</div>
+						<span class="qr-join qr-join-l" aria-hidden="true"></span>
+						<span class="qr-join qr-join-r" aria-hidden="true"></span>
 					</div>
 				</div>
 
-				<div bind:this={bodyEl} class="-mt-px rounded-3xl bg-base-200 px-4 pt-4 pb-5">
+				<div bind:this={bodyEl} class="relative -mt-px origin-top rounded-3xl bg-base-200 px-4 pt-4 pb-5">
 					<div class="flex items-center justify-between gap-3">
 						<div class="flex flex-wrap gap-1">
 							{#each clients as cliente}
@@ -409,7 +432,7 @@
 							{#if tail === 'confirm' || tail === 'error'}
 								<button
 									bind:this={registerBtn}
-									class="btn btn-accent mt-5 h-11 w-full border-none shadow-lg shadow-accent/20"
+									class="btn btn-primary mt-5 h-11 w-full"
 									onclick={register}
 								>
 									{tail === 'error' ? 'Reintentar' : 'Registrar carrera'}

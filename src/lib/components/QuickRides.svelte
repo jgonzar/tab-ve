@@ -43,7 +43,8 @@
 				precioUsd: '',
 				payload
 			});
-			onCreated?.();
+			// No onCreated: the queued card shows straight from pendingStore, and
+			// refetching the page data offline fails into SvelteKit's error page
 			return 'queued';
 		}
 
