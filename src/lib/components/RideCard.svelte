@@ -243,39 +243,45 @@
 				</button>
 			</div>
 		{:else}
-			<!-- Header: clients + price display + menu -->
-			<div class="flex items-start justify-between gap-2">
-				<div class="flex flex-wrap gap-1">
+			<!-- Header: clients, the price column, then a fixed 44px slot for the
+			     menu. Every variant reserves the slot, even when it's empty, so the
+			     price's right edge is the same on Inicio, Historial and Papelera. -->
+			<div class="flex items-start gap-1">
+				<div class="flex flex-1 flex-wrap gap-1 pt-1">
 					{#each viaje.clientes as cliente}
 						<span class="badge badge-primary badge-sm">{cliente.nombre}</span>
 					{/each}
 				</div>
 
-				<div class="flex items-start gap-10 shrink-0">
-					<div class="flex flex-col">
-						{#if precio}
-							<button
-								class="font-bold text-base"
-								class:cursor-default={!actionable}
-								onclick={startEditPrice}
-								aria-label={actionable ? 'Editar precio' : undefined}
-							>
-								{precio}
-							</button>
-						{:else}
-							<button class="flex flex-col text-left" onclick={startEditPrice}>
-								<span class="text-xs text-info font-medium leading-tight">Sin precio</span>
-								<span class="font-bold text-base text-base-content/60 leading-tight">Pendiente</span>
-							</button>
-						{/if}
-						{#if precioVes}
-							<span class="text-xs text-base-content/60">{precioVes}</span>
-						{/if}
-					</div>
+				<div class="flex shrink-0 flex-col items-end text-right">
+					<!-- py-2 -my-2: a 44px hit area that doesn't grow the header -->
+					{#if precio}
+						<button
+							class="-my-2 py-2 text-xl font-bold"
+							class:cursor-default={!actionable}
+							onclick={startEditPrice}
+							aria-label={actionable ? 'Editar precio' : undefined}
+						>
+							{precio}
+						</button>
+					{:else}
+						<button class="-my-2 flex flex-col items-end py-2 text-right" onclick={startEditPrice}>
+							<span class="text-xs text-info font-medium leading-tight">Sin precio</span>
+							<span class="text-xl font-bold text-base-content/60">Pendiente</span>
+						</button>
+					{/if}
+					{#if precioVes}
+						<!-- Lets taps through to the price button's hit area underneath -->
+						<span class="pointer-events-none text-xs text-base-content/60">{precioVes}</span>
+					{/if}
+				</div>
 
+				<!-- -mr-3 lines the dots up with the content edge, and -my-2 keeps
+				     the slot from growing the header -->
+				<div class="-my-2 -mr-3 size-11 shrink-0">
 					{#if actionable}
 						<button
-							class="btn btn-ghost btn-sm btn-circle text-base-content/80"
+							class="btn btn-ghost btn-circle size-11 text-base-content/80"
 							onclick={() => (menuOpen = true)}
 							aria-label="Opciones"
 						>
@@ -290,13 +296,14 @@
 			</div>
 		{/if}
 
-		<!-- Route -->
-		<div class="text-sm">
+		<!-- Route: one line height, and stops and destination share the origin's
+		     left edge, so the arrows form one column -->
+		<div class="text-sm leading-6">
 			<p class="font-medium text-base-content">{origen}</p>
 			{#each stops as stop}
-				<p class="text-base-content/60 pl-3 leading-6">↓ {stop}</p>
+				<p class="text-base-content/60">↓ {stop}</p>
 			{/each}
-			<p class="text-base-content/60 leading-6">→ {destino}</p>
+			<p class="text-base-content/60">→ {destino}</p>
 		</div>
 
 		<!-- Meta -->
@@ -310,9 +317,9 @@
 
 		<!-- Footer -->
 		{#if onRestore}
-			<div class="flex items-center justify-between pt-2 border-t border-base-300">
+			<div class="flex items-center justify-between gap-3 pt-3 border-t border-base-300">
 				<span class="text-xs text-base-content/60">Borrado {fechaBorrado}</span>
-				<button class="btn btn-primary btn-xs" onclick={restoreRide} disabled={restoring}>
+				<button class="btn btn-primary h-11" onclick={restoreRide} disabled={restoring}>
 					{#if restoring}
 						<span class="loading loading-spinner loading-xs"></span>
 					{:else}
@@ -320,37 +327,42 @@
 					{/if}
 				</button>
 			</div>
+		{:else if fechaPago}
+			<!-- Two rows, so neither date has to wrap next to the action -->
+			<div class="flex flex-col gap-2 pt-3 border-t border-base-300">
+				<div class="flex items-center justify-between gap-3 text-xs">
+					<span class="text-base-content/60">{fecha}</span>
+					<span class="text-success">Pagado {fechaPago}</span>
+				</div>
+				{#if onUnpaid}
+					<!-- -mr-3 -mb-2: the ghost button's text sits on the content edge -->
+					<button
+						class="btn btn-ghost h-11 self-end px-3 -mr-3 -mb-2 text-base-content/80"
+						onclick={unpayRide}
+						disabled={unpaying}
+					>
+						{#if unpaying}
+							<span class="loading loading-spinner loading-xs"></span>
+						{:else}
+							Devolver a pendientes
+						{/if}
+					</button>
+				{/if}
+			</div>
 		{:else}
-			<div class="flex items-center justify-between pt-2 border-t border-base-300">
+			<div class="flex items-center justify-between gap-3 pt-3 border-t border-base-300">
 				<span class="text-xs text-base-content/60">{fecha}</span>
 				{#if pending}
 					<span class="flex items-center gap-1 text-xs text-base-content/60">
 						<span class="loading loading-spinner loading-xs"></span>
 						Pendiente
 					</span>
-				{:else if fechaPago}
-					<div class="flex items-center gap-3">
-						<span class="text-xs text-success">Pagado {fechaPago}</span>
-						{#if onUnpaid}
-							<button
-								class="btn btn-ghost btn-sm text-base-content/80"
-								onclick={unpayRide}
-								disabled={unpaying}
-							>
-								{#if unpaying}
-									<span class="loading loading-spinner loading-xs"></span>
-								{:else}
-									Devolver a pendientes
-								{/if}
-							</button>
-						{/if}
-					</div>
 				{:else}
-					<button class="btn btn-accent btn-sm" onclick={markPaid} disabled={paying}>
+					<button class="btn btn-accent h-11" onclick={markPaid} disabled={paying}>
 						{#if paying}
 							<span class="loading loading-spinner loading-xs"></span>
 						{:else}
-							Marcar Pagado
+							Marcar pagado
 						{/if}
 					</button>
 				{/if}
