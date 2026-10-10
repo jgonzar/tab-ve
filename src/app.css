@@ -183,6 +183,12 @@ body {
 	filter: drop-shadow(0 0 0.5px rgb(255 255 255 / 0.2)) drop-shadow(0 0 18px rgb(0 0 0 / 0.6));
 }
 
+/* The package capitalizes every word of a title. Show titles as written, in
+   sentence case. Scoped under the viewport so it wins regardless of order. */
+[data-sileo-viewport] [data-sileo-title] {
+	text-transform: none;
+}
+
 /* Hide scrollbar while keeping scroll functionality */
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }

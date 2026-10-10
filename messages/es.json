@@ -39,7 +39,7 @@
 
 	"offline_banner": "Sin conexión. Las carreras se guardarán al reconectar.",
 
-	"demo_banner_short": "Demo compartida. Se reinicia cada 4 horas.",
+	"demo_banner_short": "Demo compartida. Se reinicia cada 4 h.",
 	"demo_banner_long": "Esta demo tiene datos de ejemplo y la comparten todos los visitantes. Vuelve a empezar cada 4 horas.",
 	"demo_reset_button": "Reiniciar",
 	"demo_reset_confirm_title": "¿Reiniciar la demo?",
