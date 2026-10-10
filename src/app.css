@@ -142,6 +142,13 @@ body {
 	padding-bottom: calc(0.75rem + var(--safe-bottom));
 }
 
+/* PIN gate (/acceso), a full screen of its own: clears the notch above the
+   wordmark and the home indicator below the demo link */
+.pwa-gate {
+	padding-top: calc(2rem + var(--safe-top));
+	padding-bottom: calc(1rem + var(--safe-bottom));
+}
+
 /* Momentum scrolling for any overflow-y containers (iOS Safari) */
 .overflow-y-auto {
 	-webkit-overflow-scrolling: touch;

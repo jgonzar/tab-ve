@@ -1,4 +1,45 @@
-import type { Handle } from '@sveltejs/kit';
+import { json, redirect, type Handle } from '@sveltejs/kit';
+import { sequence } from '@sveltejs/kit/hooks';
+import { isDemo } from '$lib/server/flags';
+import { hasValidSession } from '$lib/server/auth';
+import { SESSION_COOKIE } from '$lib/server/session';
+import { GATE_PATH, gateHref } from '$lib/gate';
+
+// Reachable without a session: the gate itself (its page, its form POST and
+// its __data.json, which SvelteKit reports under the page's path), plus the
+// static and PWA assets. On Vercel the CDN serves static/ before this hook
+// runs; the list keeps the preview server and any fallthrough consistent.
+const PUBLIC_PATHS = new Set([GATE_PATH, '/manifest.webmanifest', '/og.png', '/favicon.ico']);
+const PUBLIC_PREFIXES = ['/_app/', '/icons/'];
+
+function isPublic(pathname: string): boolean {
+	return PUBLIC_PATHS.has(pathname) || PUBLIC_PREFIXES.some((prefix) => pathname.startsWith(prefix));
+}
+
+function isApi(pathname: string): boolean {
+	return pathname === '/api' || pathname.startsWith('/api/');
+}
+
+// The household PIN gate. Skipped entirely on the demo deployment.
+const gate: Handle = ({ event, resolve }) => {
+	if (isDemo() || isPublic(event.url.pathname) || hasValidSession(event.cookies)) {
+		return resolve(event);
+	}
+
+	// A cookie that doesn't validate was tampered with, has aged out, or was
+	// signed with a secret that has since been rotated. Clear it, and tell the
+	// gate so it can say the session expired.
+	const hadCookie = event.cookies.get(SESSION_COOKIE) !== undefined;
+	if (hadCookie) event.cookies.delete(SESSION_COOKIE, { path: '/' });
+
+	if (isApi(event.url.pathname)) {
+		return json({ message: 'No autorizado' }, { status: 401 });
+	}
+
+	// Thrown, not returned: for a client-side navigation (__data.json) SvelteKit
+	// turns this into a JSON redirect that the router follows.
+	redirect(303, gateHref(event.url.pathname + event.url.search, hadCookie));
+};
 
 // SvelteKit preloads only JS and CSS by default. Adding fonts emits a
 // <link rel="preload" as="font"> for each Poppins file app.css pulls in, so
@@ -6,8 +47,10 @@ import type { Handle } from '@sveltejs/kit';
 //
 // woff2 only: each @font-face also lists a .woff fallback that no supported
 // browser picks, and a preload is fetched whether or not it's ever used.
-export const handle: Handle = ({ event, resolve }) =>
+const preloadFonts: Handle = ({ event, resolve }) =>
 	resolve(event, {
 		preload: ({ type, path }) =>
 			type === 'js' || type === 'css' || (type === 'font' && path.endsWith('.woff2'))
 	});
+
+export const handle = sequence(gate, preloadFonts);

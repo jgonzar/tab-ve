@@ -1,5 +1,7 @@
 <script lang="ts">
 	import '../app.css';
+	import { page } from '$app/state';
+	import { GATE_PATH } from '$lib/gate';
 	import { userState } from '$lib/stores/user.svelte';
 	import { networkState } from '$lib/stores/network.svelte';
 	import { pendingStore } from '$lib/stores/pending.svelte';
@@ -46,7 +48,10 @@
 	});
 </script>
 
-{#if !userState.activeUser}
+{#if page.route.id === GATE_PATH}
+	<!-- The PIN gate is a full screen of its own, before "¿Quién eres?" -->
+	{@render children()}
+{:else if !userState.activeUser}
 	<UserSelect />
 {:else}
 	<div class="drawer">

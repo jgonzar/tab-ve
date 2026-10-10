@@ -121,10 +121,22 @@ que describe el código.
 - Al abrir la app por primera vez, el usuario ve una pantalla de bienvenida a pantalla completa — "¿Quién eres?" — con tres tarjetas grandes y seleccionables, una por usuario.
 - La selección se persiste en `localStorage` bajo la clave `tab_active_user`.
 - El ícono de avatar en la esquina superior derecha de la barra de navegación muestra las iniciales del usuario activo. Al tocarlo se abre un popover pequeño para cambiar de usuario.
-- Sin contraseñas, sin tokens, sin sesión del lado del servidor. La identidad es exclusivamente local al dispositivo.
+- Sin contraseñas por persona. La identidad es exclusivamente local al dispositivo. Lo único que se pide es el PIN de la casa, una vez por dispositivo y antes de esta pantalla (Sección 2.3).
 - El usuario activo no cambia cómo se asigna una carrera: toda carrera nueva se asigna a JA + Marcela, con MC como conductora (`src/lib/rideDefaults.ts`, ver Sección 1.5).
 
 **Justificación:** La app es un registro compartido entre los tres. Identidad local al dispositivo es suficiente.
+
+### 2.3 Acceso a la app (PIN de la casa)
+
+La app de producción es pública en internet, así que toda página y toda ruta de `/api/*` exige un PIN compartido por la casa. No hay cuentas ni cambios en la base de datos.
+
+- **Pantalla `/acceso`:** el wordmark, "Ingresa el PIN", un campo de PIN y el botón "Entrar". El PIN son **exactamente 6 dígitos**; el sexto dígito envía el formulario solo. Al acertar, vuelve a la página que se había pedido (`?next=`).
+- **Una vez por dispositivo:** al acertar, el servidor deja una cookie `tab_session` firmada (HMAC-SHA256), `httpOnly`, `Secure`, `SameSite=Lax`, que dura unos 400 días. La app instalada en la pantalla de inicio tiene sus propias cookies, así que cada teléfono ingresa el PIN una vez dentro de la app instalada.
+- **Sin sesión válida:** las páginas redirigen (303) a `/acceso`, y `/api/*` responde 401 en JSON para cualquier método. Los recursos estáticos y de la PWA (`/manifest.webmanifest`, `/icons/*`, `/og.png`, `/_app/*`) quedan libres.
+- **Sesión vencida o revocada:** si una llamada a `/api/*` recibe 401, la app lleva a `/acceso` con el aviso "Tu sesión expiró. Ingresa el PIN de nuevo." y luego regresa. Un 401 no se trata como falta de conexión: no se encola nada nuevo, y lo que ya estaba en la cola se envía después de ingresar el PIN.
+- **Revocar todos los dispositivos:** cambiar `SESSION_SECRET` en Vercel y volver a desplegar. Cambiar el PIN: generar un nuevo `HOUSEHOLD_PIN_HASH` (no cierra sesiones abiertas; para eso, rotar también `SESSION_SECRET`).
+- **Fuerza bruta:** 5 PIN incorrectos en 15 minutos desde una misma IP bloquean esa IP 15 minutos ("Demasiados intentos. Intenta de nuevo en {min} min."), y cada intento tarda al menos 0,5 s. Es en memoria y por instancia: un esfuerzo razonable, no una garantía.
+- **Demo:** con `DEMO_MODE=on` no hay PIN. Si `PUBLIC_DEMO_URL` está definida, la pantalla muestra "¿Solo quieres probar? Ver demo".
 
 ---
 
@@ -501,6 +513,7 @@ Producción: `https://tab-ve.vercel.app`.
 ```
 /                      → Página de inicio (SSR + cliente): carreras pendientes
 /historial             → Página de historial (SSR + cliente): pagadas y papelera
+/acceso                → PIN de la casa (GET pantalla, POST verificar); ver 2.3
 /api/viajes            → POST (crear), PATCH (marcar todo pagado)
 /api/viajes/[id]       → PUT (editar), DELETE (borrado lógico),
                          PATCH (marcar pagado; o con cuerpo { precioUsd },
