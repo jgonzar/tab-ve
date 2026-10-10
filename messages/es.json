@@ -14,7 +14,7 @@
 	"date_yesterday_at": "Ayer · {time}",
 
 	"gate_heading": "Ingresa el PIN",
-	"gate_subtext": "Tab es privada. Pide el PIN a alguien de la casa.",
+	"gate_subtext": "Tab es privada. Contacta a un administrador.",
 	"gate_label": "PIN",
 	"gate_submit": "Entrar",
 	"gate_wrong_pin": "PIN incorrecto. Intenta de nuevo.",
