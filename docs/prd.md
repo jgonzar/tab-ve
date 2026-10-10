@@ -29,7 +29,7 @@ El nombre describe el trabajo central: llevar una cuenta abierta. Se suman carre
 - Selección de usuario simple y persistente — sin contraseñas.
 - 100 % gratuito para operar. Despliegue en Vercel.
 - Optimizado para iPhone / Safari y Android / Chrome en modo oscuro.
-- Interfaz completamente en español.
+- Interfaz en español por defecto, con el inglés como segundo idioma (ver Sección 5.6).
 
 ### 1.4 Exclusiones del POC
 
@@ -241,6 +241,7 @@ La tasa se obtiene del lado del servidor (`src/lib/server/bcv.ts`) para evitar p
 
 - El botón **Compartir** de la barra de resumen arma un recibo en texto plano con todas las carreras pendientes: encabezado "TAB" y fecha, luego una línea por carrera (fecha, ruta, pasajeros y precio en USD con su equivalente en Bs), y al final la cantidad y el total.
 - Una carrera sin precio aparece como "Sin precio". Sin tasa BCV, el recibo solo lleva USD.
+- El recibo sigue el idioma de la interfaz (ver 5.6). Los nombres de lugares y de personas van tal cual.
 - Las carreras en cola sin conexión no se incluyen, porque todavía no existen en el servidor.
 - Se abre la hoja de compartir del sistema (`navigator.share`). Si no está disponible o el usuario la cancela, el texto se copia al portapapeles con un toast "Resumen copiado".
 
@@ -318,7 +319,7 @@ Las especificaciones detalladas de componentes se producirán en un documento se
 | Área mínima de toque | 44 × 44 pt (Apple HIG) |
 | Tipografía | **Poppins**, autoalojada, con la pila del sistema como respaldo (ver 5.2) |
 | Opacidad mínima del texto | **60 %.** Ningún texto por debajo de 60 % de opacidad, salvo controles deshabilitados y placeholders |
-| Idioma | 100 % español — todos los textos, etiquetas, mensajes de error y estados |
+| Idioma | Español por defecto e inglés como segundo idioma, en todos los textos, etiquetas, mensajes de error y estados (ver 5.6) |
 | Animaciones | Presentes pero sutiles — ver Sección 5.5 |
 | Conexión | Usable con conectividad degradada o intermitente |
 
@@ -489,6 +490,17 @@ Las animaciones deben sentirse nativas a móvil: rápidas, fluidas y con propós
 
 Todas las animaciones deben respetar `prefers-reduced-motion` (reducir a crossfade instantáneo o sin animación).
 
+### 5.6 Idiomas
+
+La interfaz está en **español** (el idioma base) y en **inglés**. Los datos nunca se traducen.
+
+- **Cuál se usa:** el servidor lo decide en cada petición. Primero, una elección guardada (la cookie `tab_lang`). Sin ella, **la app real siempre empieza en español**, aunque el teléfono esté en inglés, y **la demo** (`DEMO_MODE=on`) sigue el `Accept-Language` del navegador. El resultado va en `<html lang>`, de donde lo lee el cliente, y se copia a `localStorage` (`tab_lang`).
+- **El cambio:** en el menú del avatar, la sección "Idioma" con "Español" y "English", y un selector pequeño ES / EN en `/acceso` y en "¿Quién eres?". Guarda la cookie (unos 400 días) y recarga la página. `POST /api/language` guarda la cookie y está detrás del PIN, como toda la API; en `/acceso` todavía no hay sesión, así que la pantalla guarda la misma cookie desde el navegador. Sin cambios en la base de datos.
+- **No se traduce:** nombres de lugares (también en las carreras rápidas), notas, nombres de personas ni nada que haya escrito el usuario.
+- **El recibo** sigue el idioma de la interfaz.
+- **Fechas y números** siguen el idioma, con una tabla de patrones por idioma (`src/lib/format.ts`). El español conserva la salida es-VE de siempre ("17 sept. 2026", "Bs. 5.919,42", "Hoy · 3:45 p. m."). El inglés usa en-US ("Sep 17, 2026", "Bs 5,919.42", "Today · 3:45 PM"). Los dólares usan el formato en-US en ambos ("$1,234.50").
+- **Los textos** viven en `messages/es.json` y `messages/en.json` (Paraglide JS), con las mismas claves y parámetros. Los errores de la API también: el servidor responde en el idioma de la petición.
+
 ---
 
 ## 6. Arquitectura Técnica
@@ -504,6 +516,7 @@ Todas las animaciones deben respetar `prefers-reduced-motion` (reducir a crossfa
 | Estilos | Tailwind CSS v4 + DaisyUI 5, tema `tab` | Utilities + componentes temáticos; costo cero |
 | Tipografía | Poppins vía `@fontsource/poppins` | Autoalojada; ver Sección 5.2 |
 | Toasts | `svelte-sileo` | Notificaciones de éxito y error |
+| Idiomas | Paraglide JS (compilado con su CLI) | Solo envía los textos que usa cada página; ver 5.6 |
 | Tasa BCV | `ve.dolarapi.com` + tabla `bcv_tasa_cache` | Gratuita; el caché es seguro para serverless y evita llamadas externas en cada carga de página |
 
 Producción: `https://tab-ve.vercel.app`.
@@ -514,6 +527,7 @@ Producción: `https://tab-ve.vercel.app`.
 /                      → Página de inicio (SSR + cliente): carreras pendientes
 /historial             → Página de historial (SSR + cliente): pagadas y papelera
 /acceso                → PIN de la casa (GET pantalla, POST verificar); ver 2.3
+/api/language          → POST { lang } (guarda el idioma en una cookie); ver 5.6
 /api/viajes            → POST (crear), PATCH (marcar todo pagado)
 /api/viajes/[id]       → PUT (editar), DELETE (borrado lógico),
                          PATCH (marcar pagado; o con cuerpo { precioUsd },

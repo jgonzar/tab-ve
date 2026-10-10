@@ -1,7 +1,7 @@
 # Tab
 
 ## Overview
-Tab is a private, Spanish-language, mobile-first web app that lets one household in Venezuela keep a running tab of rides with their trusted driver. It shows what's owed in USD and in bolívares (VES) at the official BCV rate, and lets the household settle up in batches. It installs to the home screen as a PWA.
+Tab is a private, mobile-first web app, in Spanish with English as a second language, that lets one household in Venezuela keep a running tab of rides with their trusted driver. It shows what's owed in USD and in bolívares (VES) at the official BCV rate, and lets the household settle up in batches. It installs to the home screen as a PWA.
 
 Production: https://tab-ve.vercel.app
 
@@ -17,6 +17,7 @@ The product requirements, in Spanish, are in [docs/prd.md](docs/prd.md). The app
 * **Household PIN:** Production is public, so every page and `/api/*` route sits behind one shared 6-digit PIN (see [Access](#access)). The demo deployment skips it.
 * **User Access:** Passwordless user selection, stored in `localStorage` (`tab_active_user`).
 * **Offline Resilience:** New rides created offline are queued in `localStorage` (`tab_pending_rides`) and synced when the connection returns, with an offline banner while disconnected.
+* **Two languages:** Spanish by default, and English. See [Languages](#languages).
 * **Installable PWA:** Standalone display on iOS and Android, safe-area insets and a custom pull-to-refresh. There is no service worker, so launching with no signal shows the browser's error page.
 
 ## Technical Stack
@@ -24,6 +25,7 @@ The product requirements, in Spanish, are in [docs/prd.md](docs/prd.md). The app
 * **Database:** Neon (serverless Postgres) through Drizzle ORM
 * **Hosting:** Vercel (`adapter-vercel`, `nodejs22.x` runtime)
 * **Toasts:** `svelte-sileo`
+* **Messages:** Paraglide JS, compiled with its CLI
 
 ## Application Structure
 * **Navigation:** Top bar with the "tab." wordmark and the active user's avatar; a side drawer for routing.
@@ -39,7 +41,19 @@ pnpm db:seed           # load the 3 users and 25 starter locations
 pnpm dev
 ```
 
+`pnpm dev`, `pnpm build` and `pnpm check` compile the messages first (see [Languages](#languages)).
+
 `pnpm dev` is behind the PIN gate too. Put a `HOUSEHOLD_PIN_HASH` (from `scripts/hash-pin.ts`, for a local PIN) and a `SESSION_SECRET` in `.env`, or set `DEMO_MODE=on` there to skip the gate.
+
+## Languages
+The interface is in Spanish (the base language) and English. Place names, notes and anything else typed into the app are never translated.
+
+* **Which language:** decided on the server for each request. A saved choice (the `tab_lang` cookie) wins. Without one, **the real app always starts in Spanish**, whatever the phone's language, and **the demo follows the browser's `Accept-Language`**. The result goes into `<html lang>`, which is where the client reads it, and is mirrored into `localStorage` (`tab_lang`).
+* **The switch:** the "Idioma / Language" rows in the avatar menu, plus a small ES / EN toggle on the PIN gate and on "¿Quién eres?". It saves the cookie for about 400 days and reloads. `POST /api/language` sets it (behind the PIN like every API route); the gate has no session yet, so it sets the same cookie from the page.
+* **Messages** live in `messages/es.json` and `messages/en.json`, with the same keys and `{parameters}` in both. Every visible string is there, API errors included (the server answers in the request's language). Paraglide compiles them into `src/lib/paraglide/` (git-ignored) with `pnpm i18n`. Its Vite plugin segfaults on Node 24, so `vite.config.ts` runs the CLI in a child process instead, before every `vite dev` or `vite build` (and so `vercel build`), and recompiles when a message file changes in dev. `pnpm check` runs `pnpm i18n` itself. A message with markup inside it (a bold amount mid-sentence) goes through `src/lib/rich.ts`, so each language can put its parameters in its own order.
+* **Dates and amounts** go through `src/lib/format.ts`, with a pattern table per language. Spanish keeps the es-VE output it always had ("17 sept. 2026", "Bs. 5.919,42", "Hoy · 3:45 p. m."); English uses en-US ("Sep 17, 2026", "Bs 5,919.42", "Today · 3:45 PM"). Dollars are en-US in both ("$1,234.50").
+* **The shared receipt** follows the interface language.
+* **Adding a string:** add the key to both files, then use `m.key()` from `$lib/paraglide/messages.js`. Call messages while rendering, never in a module-level constant, or the text freezes in whichever language loaded the module first.
 
 ## Access
 `src/hooks.server.ts` enforces one household PIN on every page and API route. Without a valid session, pages answer 303 to `/acceso?next=<path>` and `/api/*` answers 401 JSON for every method. The gate page, its POST and the static and PWA assets (`/manifest.webmanifest`, `/icons/*`, `/og.png`, `/_app/*`) stay public. With `DEMO_MODE=on` the gate is off entirely.
