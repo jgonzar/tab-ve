@@ -3,6 +3,7 @@ import type { RequestHandler } from './$types';
 import { db } from '$lib/server/db';
 import { viajes, viajeClientes, viajeParadas, ubicaciones } from '$lib/server/schema';
 import { eq, isNull, sql } from 'drizzle-orm';
+import { m } from '$lib/paraglide/messages.js';
 
 type FormLoc = { id: number | null; nombre: string };
 
@@ -21,7 +22,7 @@ async function resolveLocation(loc: FormLoc): Promise<number> {
 
 export const PATCH: RequestHandler = async ({ params, request }) => {
 	const id = parseInt(params.id);
-	if (isNaN(id)) error(400, 'ID inválido');
+	if (isNaN(id)) error(400, m.api_invalid_id());
 
 	const body = await request.json().catch(() => null);
 
@@ -32,7 +33,7 @@ export const PATCH: RequestHandler = async ({ params, request }) => {
 			.set({ borradoEn: null })
 			.where(eq(viajes.id, id))
 			.returning();
-		if (!updated) error(404, 'Carrera no encontrada');
+		if (!updated) error(404, m.api_ride_not_found());
 		return json(updated);
 	}
 
@@ -43,20 +44,20 @@ export const PATCH: RequestHandler = async ({ params, request }) => {
 			.set({ pagadoEn: null })
 			.where(eq(viajes.id, id))
 			.returning();
-		if (!updated) error(404, 'Carrera no encontrada');
+		if (!updated) error(404, m.api_ride_not_found());
 		return json(updated);
 	}
 
 	// Price update
 	if (body?.precioUsd !== undefined) {
 		const val = parseFloat(body.precioUsd);
-		if (isNaN(val) || val < 0) error(400, 'Precio inválido');
+		if (isNaN(val) || val < 0) error(400, m.api_invalid_price());
 		const [updated] = await db
 			.update(viajes)
 			.set({ precioUsd: String(val) })
 			.where(eq(viajes.id, id))
 			.returning();
-		if (!updated) error(404, 'Carrera no encontrada');
+		if (!updated) error(404, m.api_ride_not_found());
 		return json(updated);
 	}
 
@@ -66,22 +67,22 @@ export const PATCH: RequestHandler = async ({ params, request }) => {
 		.set({ pagadoEn: new Date() })
 		.where(eq(viajes.id, id))
 		.returning();
-	if (!updated) error(404, 'Carrera no encontrada');
+	if (!updated) error(404, m.api_ride_not_found());
 	return json(updated);
 };
 
 export const PUT: RequestHandler = async ({ params, request }) => {
 	const id = parseInt(params.id);
-	if (isNaN(id)) error(400, 'ID inválido');
+	if (isNaN(id)) error(400, m.api_invalid_id());
 
 	const body = await request.json().catch(() => null);
-	if (!body) error(400, 'Cuerpo de solicitud inválido');
+	if (!body) error(400, m.api_invalid_body());
 
 	const { clienteIds, conductorNombre, origen, paradas = [], destino, precioUsd, minutosEspera, notas, creadoEn } = body;
 
-	if (!clienteIds?.length) error(400, 'Se requiere al menos un cliente');
-	if (!origen) error(400, 'Origen requerido');
-	if (!destino) error(400, 'Destino requerido');
+	if (!clienteIds?.length) error(400, m.api_client_required());
+	if (!origen) error(400, m.api_origin_required());
+	if (!destino) error(400, m.api_destination_required());
 
 	try {
 		const origenId = await resolveLocation(origen);
@@ -103,7 +104,7 @@ export const PUT: RequestHandler = async ({ params, request }) => {
 			.where(eq(viajes.id, id))
 			.returning();
 
-		if (!updated) error(404, 'Carrera no encontrada');
+		if (!updated) error(404, m.api_ride_not_found());
 
 		await db.delete(viajeClientes).where(eq(viajeClientes.viajeId, id));
 		await db.insert(viajeClientes).values(
@@ -120,20 +121,20 @@ export const PUT: RequestHandler = async ({ params, request }) => {
 		return json(updated);
 	} catch (e) {
 		console.error('[PUT /api/viajes/:id]', e);
-		error(500, 'Error al actualizar la carrera');
+		error(500, m.api_update_failed());
 	}
 };
 
 export const DELETE: RequestHandler = async ({ params }) => {
 	const id = parseInt(params.id);
-	if (isNaN(id)) error(400, 'ID inválido');
+	if (isNaN(id)) error(400, m.api_invalid_id());
 
 	const [updated] = await db
 		.update(viajes)
 		.set({ borradoEn: new Date() })
 		.where(eq(viajes.id, id))
 		.returning();
-	if (!updated) error(404, 'Carrera no encontrada');
+	if (!updated) error(404, m.api_ride_not_found());
 
 	return new Response(null, { status: 204 });
 };

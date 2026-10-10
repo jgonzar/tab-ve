@@ -4,6 +4,8 @@ import { isDemo } from '$lib/server/flags';
 import { hasValidSession } from '$lib/server/auth';
 import { SESSION_COOKIE } from '$lib/server/session';
 import { GATE_PATH, gateHref } from '$lib/gate';
+import { resolveLanguage, withLanguage } from '$lib/server/language';
+import { m } from '$lib/paraglide/messages.js';
 
 // Reachable without a session: the gate itself (its page, its form POST and
 // its __data.json, which SvelteKit reports under the page's path), plus the
@@ -33,12 +35,22 @@ const gate: Handle = ({ event, resolve }) => {
 	if (hadCookie) event.cookies.delete(SESSION_COOKIE, { path: '/' });
 
 	if (isApi(event.url.pathname)) {
-		return json({ message: 'No autorizado' }, { status: 401 });
+		return json({ message: m.api_unauthorized() }, { status: 401 });
 	}
 
 	// Thrown, not returned: for a client-side navigation (__data.json) SvelteKit
 	// turns this into a JSON redirect that the router follows.
 	redirect(303, gateHref(event.url.pathname + event.url.search, hadCookie));
+};
+
+// Runs first, so everything after it (the gate's 401 included) renders in the
+// request's language. The page shell gets it in <html lang>, which is also
+// where the client reads it from.
+const language: Handle = ({ event, resolve }) => {
+	const lang = resolveLanguage(event);
+	return withLanguage(lang, event, () =>
+		resolve(event, { transformPageChunk: ({ html }) => html.replace('%lang%', lang) })
+	);
 };
 
 // SvelteKit preloads only JS and CSS by default. Adding fonts emits a
@@ -53,4 +65,4 @@ const preloadFonts: Handle = ({ event, resolve }) =>
 			type === 'js' || type === 'css' || (type === 'font' && path.endsWith('.woff2'))
 	});
 
-export const handle = sequence(gate, preloadFonts);
+export const handle = sequence(language, gate, preloadFonts);

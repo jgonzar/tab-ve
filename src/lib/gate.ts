@@ -1,6 +1,7 @@
-// The household PIN gate's shared pieces: its path, the PIN format and its
-// copy. Used by the server hook, the gate route, the client 401 handler and
-// scripts/hash-pin.ts, so keep this module free of $env and $app imports.
+// The household PIN gate's shared pieces: its path and the PIN format (its
+// copy lives in messages/ with every other string). Used by the server hook,
+// the gate route, the client 401 handler and scripts/hash-pin.ts, so keep this
+// module free of $env and $app imports.
 
 export const GATE_PATH = '/acceso';
 
@@ -17,20 +18,6 @@ const PIN_FORMAT = new RegExp(`^${PIN_PATTERN}$`);
 export function isPinFormat(pin: string): boolean {
 	return PIN_FORMAT.test(pin);
 }
-
-// Every string on the gate screen. Spanish for now; F2 adds English.
-export const GATE_COPY = {
-	heading: 'Ingresa el PIN',
-	subtext: 'Tab es privada. Pide el PIN a alguien de la casa.',
-	label: 'PIN',
-	submit: 'Entrar',
-	wrongPin: 'PIN incorrecto. Intenta de nuevo.',
-	lockedOut: 'Demasiados intentos. Intenta de nuevo en {min} min.',
-	networkError: 'No se pudo verificar. Revisa tu conexión e intenta de nuevo.',
-	expired: 'Tu sesión expiró. Ingresa el PIN de nuevo.',
-	demoPrompt: '¿Solo quieres probar?',
-	demoLink: 'Ver demo'
-};
 
 /** The gate URL that returns to `next` after the PIN. `expired` shows the "session expired" notice. */
 export function gateHref(next: string, expired = false): string {

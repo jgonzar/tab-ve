@@ -8,3 +8,9 @@ build/
 dist/
 .vercel
 .DS_Store
+
+# Paraglide's compiled messages (pnpm i18n, or any vite command) and the
+# inlang SDK's local state. Only the project settings are source.
+src/lib/paraglide/
+project.inlang/*
+!project.inlang/settings.json

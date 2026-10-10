@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
+	import { m } from '$lib/paraglide/messages.js';
 
 	/**
 	 * The standard confirmation dialog. Use this instead of an inline
@@ -49,7 +50,7 @@
 			class="btn btn-circle size-11 bg-base-300 border-none text-base-content hover:bg-base-100 absolute right-3 top-3"
 			onclick={close}
 			disabled={busy}
-			aria-label="Cerrar"
+			aria-label={m.common_close()}
 		>
 			<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
 				<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -63,7 +64,7 @@
 		{/if}
 
 		<div class="modal-action">
-			<button class="btn btn-ghost h-11" onclick={close} disabled={busy}>Cancelar</button>
+			<button class="btn btn-ghost h-11" onclick={close} disabled={busy}>{m.common_cancel()}</button>
 			<button class="btn h-11 {confirmClass}" onclick={onConfirm} disabled={busy}>
 				{#if busy}
 					<span class="loading loading-spinner loading-sm"></span>
@@ -75,6 +76,6 @@
 	</div>
 
 	<div class="modal-backdrop" role="none">
-		<button type="button" onclick={close} disabled={busy}>cerrar</button>
+		<button type="button" onclick={close} disabled={busy}>{m.common_close_backdrop()}</button>
 	</div>
 </div>

@@ -2,6 +2,9 @@
 	import { untrack } from 'svelte';
 	import { sileo } from 'svelte-sileo';
 	import ConfirmDialog from './ConfirmDialog.svelte';
+	import { m } from '$lib/paraglide/messages.js';
+	import { formatBs, formatDate, formatUsd } from '$lib/format';
+	import { rich } from '$lib/rich';
 
 	export type RideData = {
 		id: number;
@@ -59,44 +62,14 @@
 	const destino = $derived(viaje.paradas[viaje.paradas.length - 1]?.nombre ?? '—');
 	const stops = $derived(viaje.paradas.slice(1, -1).map((p) => p.nombre));
 
-	const precio = $derived(
-		localPriceUsd
-			? new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(
-					parseFloat(localPriceUsd)
-				)
-			: null
-	);
+	const precio = $derived(localPriceUsd ? formatUsd(parseFloat(localPriceUsd)) : null);
+	const precioVes = $derived(tasa && localPriceUsd ? formatBs(parseFloat(localPriceUsd) * tasa) : null);
 
-	const precioVes = $derived(
-		tasa && localPriceUsd
-			? 'Bs. ' +
-					new Intl.NumberFormat('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(
-						parseFloat(localPriceUsd) * tasa
-					)
-			: null
-	);
+	const fecha = $derived(formatDate(viaje.creadoEn));
+	const fechaPago = $derived(viaje.pagadoEn ? formatDate(viaje.pagadoEn) : null);
+	const fechaBorrado = $derived(viaje.borradoEn ? formatDate(viaje.borradoEn) : null);
 
-	const fecha = $derived(
-		new Intl.DateTimeFormat('es-VE', { day: 'numeric', month: 'short', year: 'numeric' }).format(
-			new Date(viaje.creadoEn)
-		)
-	);
-
-	const fechaPago = $derived(
-		viaje.pagadoEn
-			? new Intl.DateTimeFormat('es-VE', { day: 'numeric', month: 'short', year: 'numeric' }).format(
-					new Date(viaje.pagadoEn)
-				)
-			: null
-	);
-
-	const fechaBorrado = $derived(
-		viaje.borradoEn
-			? new Intl.DateTimeFormat('es-VE', { day: 'numeric', month: 'short', year: 'numeric' }).format(
-					new Date(viaje.borradoEn)
-				)
-			: null
-	);
+	const deleteBody = $derived(rich(m.card_delete_body, ['route']));
 
 	// A ride is actionable only while it's live: not paid, not queued offline,
 	// and not in the trash. Gates the price editor, the ••• menu and the sheet.
@@ -146,10 +119,10 @@
 		try {
 			const res = await fetch(`/api/viajes/${viaje.id}`, { method: 'PATCH' });
 			if (!res.ok) throw new Error();
-			sileo.success({ title: 'Carrera pagada', description: 'Movida al historial.' });
+			sileo.success({ title: m.card_paid(), description: m.card_paid_desc() });
 			onPaid?.(viaje.id);
 		} catch {
-			sileo.error({ title: 'No se pudo marcar como pagada', description: 'Intenta de nuevo.' });
+			sileo.error({ title: m.card_pay_failed(), description: m.common_try_again() });
 			paying = false;
 		}
 	}
@@ -159,13 +132,13 @@
 		try {
 			const res = await fetch(`/api/viajes/${viaje.id}`, { method: 'DELETE' });
 			if (!res.ok) throw new Error();
-			sileo.success({ title: 'Carrera eliminada', description: 'Puedes restaurarla desde la papelera.' });
+			sileo.success({ title: m.card_deleted(), description: m.card_deleted_desc() });
 			// Close explicitly rather than relying on the parent unmounting the card —
 			// a call site without onDeleted would otherwise leave the dialog spinning.
 			confirmingDelete = false;
 			onDeleted?.(viaje.id);
 		} catch {
-			sileo.error({ title: 'No se pudo eliminar', description: 'Intenta de nuevo.' });
+			sileo.error({ title: m.card_delete_failed(), description: m.common_try_again() });
 		} finally {
 			deleting = false;
 		}
@@ -180,10 +153,10 @@
 				body: JSON.stringify({ unpay: true })
 			});
 			if (!res.ok) throw new Error();
-			sileo.success({ title: 'Carrera devuelta a pendientes', description: 'Vuelve a aparecer en Inicio.' });
+			sileo.success({ title: m.card_unpaid(), description: m.card_back_on_home() });
 			onUnpaid?.(viaje.id);
 		} catch {
-			sileo.error({ title: 'No se pudo devolver', description: 'Intenta de nuevo.' });
+			sileo.error({ title: m.card_unpay_failed(), description: m.common_try_again() });
 			unpaying = false;
 		}
 	}
@@ -197,10 +170,10 @@
 				body: JSON.stringify({ restore: true })
 			});
 			if (!res.ok) throw new Error();
-			sileo.success({ title: 'Carrera restaurada', description: 'Vuelve a aparecer en Inicio.' });
+			sileo.success({ title: m.card_restored(), description: m.card_back_on_home() });
 			onRestore?.(viaje.id);
 		} catch {
-			sileo.error({ title: 'No se pudo restaurar', description: 'Intenta de nuevo.' });
+			sileo.error({ title: m.card_restore_failed(), description: m.common_try_again() });
 			restoring = false;
 		}
 	}
@@ -232,7 +205,7 @@
 					class="btn btn-accent btn-square size-12"
 					onclick={savePrice}
 					disabled={savingPrice}
-					aria-label="Guardar precio"
+					aria-label={m.card_save_price()}
 				>
 					{#if savingPrice}
 						<span class="loading loading-spinner loading-sm"></span>
@@ -243,7 +216,7 @@
 				<button
 					class="btn btn-ghost btn-square size-12"
 					onclick={() => (editingPrice = false)}
-					aria-label="Cancelar"
+					aria-label={m.common_cancel()}
 				>
 					✕
 				</button>
@@ -265,14 +238,14 @@
 							class="-my-2 py-2 text-xl font-bold"
 							class:cursor-default={!actionable}
 							onclick={startEditPrice}
-							aria-label={actionable ? 'Editar precio' : undefined}
+							aria-label={actionable ? m.card_edit_price() : undefined}
 						>
 							{precio}
 						</button>
 					{:else}
 						<button class="-my-2 flex flex-col items-end py-2 text-right" onclick={startEditPrice}>
-							<span class="text-xs text-info font-medium leading-tight">Sin precio</span>
-							<span class="text-xl font-bold text-base-content/60">Pendiente</span>
+							<span class="text-xs text-info font-medium leading-tight">{m.common_no_price()}</span>
+							<span class="text-xl font-bold text-base-content/60">{m.card_price_pending()}</span>
 						</button>
 					{/if}
 					{#if precioVes}
@@ -289,7 +262,7 @@
 							<button
 								class="btn btn-ghost btn-circle size-11 text-base-content/80"
 								onclick={() => (menuOpen = true)}
-								aria-label="Opciones"
+								aria-label={m.card_options()}
 							>
 								<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
 									<circle cx="5" cy="12" r="2" />
@@ -315,7 +288,7 @@
 
 		<!-- Meta -->
 		{#if viaje.minutosEspera}
-			<div class="text-xs text-base-content/60">{viaje.minutosEspera} min espera</div>
+			<div class="text-xs text-base-content/60">{m.card_wait({ minutes: viaje.minutosEspera })}</div>
 		{/if}
 
 		{#if viaje.notas}
@@ -329,13 +302,13 @@
 					<svg xmlns="http://www.w3.org/2000/svg" class="size-3.5 shrink-0 text-error" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
 						<path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
 					</svg>
-					Borrado {fechaBorrado}
+					{m.card_deleted_on({ date: fechaBorrado ?? '' })}
 				</span>
 				<button class="btn btn-primary h-11" onclick={restoreRide} disabled={restoring}>
 					{#if restoring}
 						<span class="loading loading-spinner loading-xs"></span>
 					{:else}
-						Restaurar
+						{m.card_restore()}
 					{/if}
 				</button>
 			</div>
@@ -348,7 +321,7 @@
 						<svg xmlns="http://www.w3.org/2000/svg" class="size-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
 							<path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
 						</svg>
-						Pagado {fechaPago}
+						{m.card_paid_on({ date: fechaPago })}
 					</span>
 				</div>
 				{#if onUnpaid}
@@ -361,7 +334,7 @@
 						{#if unpaying}
 							<span class="loading loading-spinner loading-xs"></span>
 						{:else}
-							Devolver a pendientes
+							{m.card_unpay()}
 						{/if}
 					</button>
 				{/if}
@@ -372,14 +345,14 @@
 				{#if pending}
 					<span class="flex items-center gap-1 text-xs text-base-content/60">
 						<span class="loading loading-spinner loading-xs"></span>
-						Pendiente
+						{m.card_queued()}
 					</span>
 				{:else}
 					<button class="btn btn-accent h-11" onclick={markPaid} disabled={paying}>
 						{#if paying}
 							<span class="loading loading-spinner loading-xs"></span>
 						{:else}
-							Marcar pagado
+							{m.card_mark_paid()}
 						{/if}
 					</button>
 				{/if}
@@ -403,7 +376,7 @@
 				<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-base-content/80" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
 					<path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
 				</svg>
-				Editar
+				{m.card_edit()}
 			</button>
 
 			<button
@@ -413,28 +386,29 @@
 				<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
 					<path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
 				</svg>
-				Eliminar
+				{m.card_delete()}
 			</button>
 
 			<div class="border-t border-base-300 px-5 pt-3 pwa-sheet-footer">
-				<button class="btn btn-ghost h-12 w-full" onclick={() => (menuOpen = false)}>Cancelar</button>
+				<button class="btn btn-ghost h-12 w-full" onclick={() => (menuOpen = false)}>{m.common_cancel()}</button>
 			</div>
 		</div>
 
 		<div class="modal-backdrop" role="none">
-			<button type="button" onclick={() => (menuOpen = false)}>cerrar</button>
+			<button type="button" onclick={() => (menuOpen = false)}>{m.common_close_backdrop()}</button>
 		</div>
 	</div>
 {/if}
 
 <ConfirmDialog
 	bind:open={confirmingDelete}
-	title="¿Eliminar esta carrera?"
-	confirmLabel="Sí, eliminar"
+	title={m.card_delete_title()}
+	confirmLabel={m.card_delete_confirm()}
 	confirmClass="btn-error"
 	busy={deleting}
 	onConfirm={deleteRide}
 >
-	Se eliminará <span class="font-semibold text-base-content">{origen} → {destino}</span>.
-	Podrás restaurarla desde la papelera en Historial.
+	{#each deleteBody as part}{#if part.slot === 'route'}<span class="font-semibold text-base-content"
+				>{origen} → {destino}</span
+			>{:else}{part.text}{/if}{/each}
 </ConfirmDialog>

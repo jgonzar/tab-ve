@@ -1,6 +1,10 @@
 <script lang="ts">
 	import { userState, USERS, type User } from '$lib/stores/user.svelte';
 	import Wordmark from './Wordmark.svelte';
+	import LanguageToggle from './LanguageToggle.svelte';
+	import { m } from '$lib/paraglide/messages.js';
+
+	const ROLES = { cliente: m.role_cliente, conductora: m.role_conductora };
 
 	function select(user: User) {
 		userState.setUser(user);
@@ -8,9 +12,11 @@
 </script>
 
 <div class="fixed inset-0 z-50 bg-base-100 flex flex-col items-center justify-center p-8 gap-10">
+	<LanguageToggle from="app" />
+
 	<div class="text-center">
 		<h1><Wordmark class="h-12 mx-auto" /></h1>
-		<p class="text-base-content/60 mt-2 text-sm">Selecciona tu usuario para continuar</p>
+		<p class="text-base-content/60 mt-2 text-sm">{m.who_prompt()}</p>
 	</div>
 
 	<div class="flex flex-col gap-3 w-full max-w-xs">
@@ -27,7 +33,7 @@
 					</div>
 					<div>
 						<p class="font-semibold">{user.nombre}</p>
-						<p class="text-xs text-base-content/60 capitalize">{user.rol}</p>
+						<p class="text-xs text-base-content/60 capitalize">{ROLES[user.rol]()}</p>
 					</div>
 				</div>
 			</button>

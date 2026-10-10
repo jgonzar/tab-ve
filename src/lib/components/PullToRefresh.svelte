@@ -2,6 +2,7 @@
 	import { invalidateAll } from '$app/navigation';
 	import { sileo } from 'svelte-sileo';
 	import { networkState } from '$lib/stores/network.svelte';
+	import { m } from '$lib/paraglide/messages.js';
 
 	let { children } = $props();
 
@@ -67,7 +68,7 @@
 		// throwing, so don't try: say so and let the pull spring back
 		if (!networkState.online) {
 			pull = 0;
-			sileo.error({ title: 'No se pudo actualizar', description: 'Revisa tu conexión e intenta de nuevo.' });
+			sileo.error({ title: m.pull_failed(), description: m.common_check_connection() });
 			return;
 		}
 
@@ -76,7 +77,7 @@
 		try {
 			await invalidateAll();
 		} catch {
-			sileo.error({ title: 'No se pudo actualizar', description: 'Revisa tu conexión e intenta de nuevo.' });
+			sileo.error({ title: m.pull_failed(), description: m.common_check_connection() });
 		} finally {
 			refreshing = false;
 			pull = 0;
@@ -122,7 +123,7 @@
 	>
 		{#if refreshing}
 			<span class="loading loading-spinner loading-xs"></span>
-			Actualizando…
+			{m.pull_refreshing()}
 		{:else}
 			<svg
 				xmlns="http://www.w3.org/2000/svg"
@@ -135,7 +136,7 @@
 			>
 				<path stroke-linecap="round" stroke-linejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
 			</svg>
-			{ready ? 'Suelta para actualizar' : 'Desliza para actualizar'}
+			{ready ? m.pull_release() : m.pull_hint()}
 		{/if}
 	</div>
 </div>

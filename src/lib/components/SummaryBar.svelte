@@ -1,5 +1,8 @@
 <script lang="ts">
 	import ConfirmDialog from './ConfirmDialog.svelte';
+	import { m } from '$lib/paraglide/messages.js';
+	import { formatBs, formatUsd } from '$lib/format';
+	import { rich } from '$lib/rich';
 
 	let {
 		count,
@@ -17,18 +20,10 @@
 		onExport?: () => void;
 	} = $props();
 
-	const totalUsdFmt = $derived(
-		new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(totalUsd)
-	);
-
-	const totalVes = $derived(
-		tasa
-			? 'Bs. ' +
-					new Intl.NumberFormat('es-VE', {
-						minimumFractionDigits: 2,
-						maximumFractionDigits: 2
-					}).format(totalUsd * tasa)
-			: null
+	const totalUsdFmt = $derived(formatUsd(totalUsd));
+	const totalVes = $derived(tasa ? formatBs(totalUsd * tasa) : null);
+	const payAllBody = $derived(
+		rich(count === 1 ? m.summary_pay_all_body_one : m.summary_pay_all_body_other, ['count', 'total'])
 	);
 
 	let confirming = $state(false);
@@ -52,18 +47,18 @@
 		     many lines the total stacks under it -->
 		<div class="flex items-start">
 			<div class="flex-1 text-center">
-				<p class="text-xs text-base-content/60 uppercase tracking-wide">Pendientes</p>
+				<p class="text-xs text-base-content/60 uppercase tracking-wide">{m.summary_pending()}</p>
 				<p class="text-2xl font-bold">{count}</p>
 			</div>
 			<div class="w-px self-stretch bg-base-content/15"></div>
 			<div class="flex-1 text-center">
-				<p class="text-xs text-base-content/60 uppercase tracking-wide">Total</p>
+				<p class="text-xs text-base-content/60 uppercase tracking-wide">{m.summary_total()}</p>
 				<p class="text-2xl font-bold">{totalUsdFmt}</p>
 				{#if totalVes}
 					<p class="text-sm text-base-content/60">{totalVes}</p>
 				{/if}
 				{#if stale}
-					<p class="text-xs text-warning">tasa de ayer</p>
+					<p class="text-xs text-warning">{m.summary_stale_rate()}</p>
 				{/if}
 			</div>
 		</div>
@@ -76,12 +71,12 @@
 					<button
 						class="btn btn-ghost h-11 px-3 -ml-3 text-base-content/60 gap-1"
 						onclick={onExport}
-						aria-label="Exportar resumen"
+						aria-label={m.summary_share_label()}
 					>
 						<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
 							<path stroke-linecap="round" stroke-linejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
 						</svg>
-						Compartir
+						{m.summary_share()}
 					</button>
 				{:else}
 					<span></span>
@@ -89,7 +84,7 @@
 
 				{#if onPayAll}
 					<button class="btn btn-ghost h-11 px-3 -mr-3 text-base-content/60" onclick={() => (confirming = true)}>
-						Marcar todo pagado
+						{m.summary_pay_all()}
 					</button>
 				{/if}
 			</div>
@@ -105,18 +100,14 @@
 {#if onPayAll}
 	<ConfirmDialog
 		bind:open={confirming}
-		title="¿Marcar todas como pagadas?"
-		confirmLabel="Sí, pagar todo"
+		title={m.summary_pay_all_title()}
+		confirmLabel={m.summary_pay_all_confirm()}
 		confirmClass="btn-accent"
 		busy={paying}
 		onConfirm={confirm}
 	>
-		Se marcarán <span class="font-semibold text-base-content">{count}</span>
-		{count === 1 ? 'carrera' : 'carreras'} por
-		<span class="font-semibold text-base-content">{totalUsdFmt}</span>
-		{#if totalVes}
-			<span class="text-base-content/60">({totalVes})</span>
-		{/if}
-		como pagadas.
+		{#each payAllBody as part}{#if part.slot === 'count'}<span class="font-semibold text-base-content">{count}</span
+			>{:else if part.slot === 'total'}<span class="font-semibold text-base-content">{totalUsdFmt}</span
+			>{#if totalVes}{' '}<span class="text-base-content/60">({totalVes})</span>{/if}{:else}{part.text}{/if}{/each}
 	</ConfirmDialog>
 {/if}

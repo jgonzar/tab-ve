@@ -10,6 +10,8 @@
 	import RideCard, { type RideData } from '$lib/components/RideCard.svelte';
 	import SummaryBar from '$lib/components/SummaryBar.svelte';
 	import QuickRides from '$lib/components/QuickRides.svelte';
+	import { m } from '$lib/paraglide/messages.js';
+	import { formatBs, formatDayMonth, formatLongDate, formatUsd } from '$lib/format';
 
 	let { data } = $props();
 	let showSheet = $state(false);
@@ -96,30 +98,23 @@
 	async function handlePayAll() {
 		const res = await fetch('/api/viajes', { method: 'PATCH' });
 		if (!res.ok) {
-			sileo.error({ title: 'No se pudieron marcar todas', description: 'Intenta de nuevo.' });
+			sileo.error({ title: m.home_pay_all_failed(), description: m.common_try_again() });
 			return;
 		}
-		sileo.success({ title: 'Todo pagado', description: 'Las carreras se movieron al historial.' });
+		sileo.success({ title: m.home_pay_all_done(), description: m.home_pay_all_done_desc() });
 		hiddenIds = new Set();
 		await invalidateAll();
 	}
 
+	// The shared text receipt, in the interface language. Place names and
+	// people stay as typed.
 	function buildReceipt(viajes: RideData[]): string {
 		const tasa = data.tasa?.tasa ?? null;
-		const today = new Intl.DateTimeFormat('es-VE', {
-			day: 'numeric', month: 'long', year: 'numeric'
-		}).format(new Date());
 		const div = '─'.repeat(36);
-		const fmtFecha = (d: Date | string) =>
-			new Intl.DateTimeFormat('es-VE', { day: 'numeric', month: 'short' }).format(new Date(d));
-		const fmtUsd = (n: number) =>
-			new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(n);
-		const fmtVes = (n: number) =>
-			'Bs. ' + new Intl.NumberFormat('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
 
 		const lines: string[] = [
 			'TAB',
-			`Carreras pendientes — ${today}`,
+			m.receipt_heading({ date: formatLongDate(new Date()) }),
 			div,
 			''
 		];
@@ -131,10 +126,10 @@
 			const pasajeros = v.clientes.map(c => c.nombre).join(', ');
 			const usd = v.precioUsd ? parseFloat(v.precioUsd) : null;
 			const precioLine = usd != null
-				? tasa ? `${fmtUsd(usd)}  (${fmtVes(usd * tasa)})` : fmtUsd(usd)
-				: 'Sin precio';
+				? tasa ? `${formatUsd(usd)}  (${formatBs(usd * tasa)})` : formatUsd(usd)
+				: m.common_no_price();
 
-			lines.push(`${i + 1}. ${fmtFecha(v.creadoEn)}  •  ${ruta}`);
+			lines.push(`${i + 1}. ${formatDayMonth(v.creadoEn)}  •  ${ruta}`);
 			lines.push(`   ${pasajeros}`);
 			lines.push(`   ${precioLine}`);
 			lines.push('');
@@ -143,11 +138,12 @@
 		const total = viajes.filter(v => v.id >= 0).reduce((s, v) => s + (v.precioUsd ? parseFloat(v.precioUsd) : 0), 0);
 		const count = viajes.filter(v => v.id >= 0).length;
 		const totalLine = tasa
-			? `${fmtUsd(total)}  (${fmtVes(total * tasa)})`
-			: fmtUsd(total);
+			? `${formatUsd(total)}  (${formatBs(total * tasa)})`
+			: formatUsd(total);
 
 		lines.push(div);
-		lines.push(`${count} carrera${count !== 1 ? 's' : ''}  •  Total: ${totalLine}`);
+		const footer = count === 1 ? m.receipt_footer_one : m.receipt_footer_other;
+		lines.push(footer({ count, total: totalLine }));
 
 		return lines.join('\n');
 	}
@@ -163,7 +159,7 @@
 			}
 		}
 		await navigator.clipboard.writeText(text);
-		sileo.success({ title: 'Resumen copiado', description: 'Pégalo donde quieras compartirlo.' });
+		sileo.success({ title: m.home_summary_copied(), description: m.home_summary_copied_desc() });
 	}
 </script>
 
@@ -180,7 +176,7 @@
 
 {#if visibleViajes.length === 0}
 	<div class="flex flex-col items-center justify-center py-24 gap-2">
-		<p class="text-base-content/60 text-sm">No hay carreras pendientes</p>
+		<p class="text-base-content/60 text-sm">{m.home_empty()}</p>
 	</div>
 {:else}
 	<div class="space-y-3 pwa-list-inset">
@@ -208,7 +204,7 @@
 <button
 	onclick={openCreate}
 	class="btn btn-primary btn-circle btn-lg fixed pwa-fab right-4 shadow-lg z-20"
-	aria-label="Agregar carrera"
+	aria-label={m.home_add_ride()}
 >
 	<svg
 		xmlns="http://www.w3.org/2000/svg"

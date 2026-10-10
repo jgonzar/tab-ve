@@ -3,6 +3,7 @@ import type { RequestHandler } from './$types';
 import { db } from '$lib/server/db';
 import { viajes, viajeClientes, viajeParadas, ubicaciones } from '$lib/server/schema';
 import { sql, isNull, and } from 'drizzle-orm';
+import { m } from '$lib/paraglide/messages.js';
 
 type FormLoc = { id: number | null; nombre: string };
 
@@ -30,7 +31,7 @@ export const PATCH: RequestHandler = async () => {
 
 export const POST: RequestHandler = async ({ request }) => {
 	const body = await request.json().catch(() => null);
-	if (!body) error(400, 'Cuerpo de solicitud inválido');
+	if (!body) error(400, m.api_invalid_body());
 
 	const {
 		clienteIds,
@@ -44,9 +45,9 @@ export const POST: RequestHandler = async ({ request }) => {
 		creadoEn
 	} = body;
 
-	if (!clienteIds?.length) error(400, 'Se requiere al menos un cliente');
-	if (!origen) error(400, 'Origen requerido');
-	if (!destino) error(400, 'Destino requerido');
+	if (!clienteIds?.length) error(400, m.api_client_required());
+	if (!origen) error(400, m.api_origin_required());
+	if (!destino) error(400, m.api_destination_required());
 
 	try {
 		const origenId = await resolveLocation(origen);
@@ -85,6 +86,6 @@ export const POST: RequestHandler = async ({ request }) => {
 		return json(newViaje, { status: 201 });
 	} catch (e) {
 		console.error('[POST /api/viajes]', e);
-		error(500, 'Error al crear la carrera');
+		error(500, m.api_create_failed());
 	}
 };

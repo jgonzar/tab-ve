@@ -3,8 +3,20 @@
 	import { userState, USERS } from '$lib/stores/user.svelte';
 	import { CURRENT_ROW } from '$lib/current';
 	import Wordmark from './Wordmark.svelte';
+	import { sileo } from 'svelte-sileo';
+	import { getLocale } from '$lib/paraglide/runtime.js';
+	import { m } from '$lib/paraglide/messages.js';
+	import { LANGUAGES, switchLanguage } from '$lib/language';
 
 	let menuOpen = $state(false);
+	const currentLang = getLocale();
+
+	async function pickLanguage(lang: (typeof LANGUAGES)[number]['code']) {
+		menuOpen = false;
+		if (!(await switchLanguage(lang, 'app'))) {
+			sileo.error({ title: m.lang_switch_failed(), description: m.common_check_connection() });
+		}
+	}
 
 	// Close on any click outside the user menu
 	$effect(() => {
@@ -20,7 +32,7 @@
 <div class="navbar bg-base-200 sticky top-0 z-30 shadow-sm">
 	<!-- Mobile: hamburger -->
 	<div class="navbar-start md:hidden">
-		<label for="main-drawer" aria-label="Abrir menú" class="btn btn-ghost btn-circle size-11">
+		<label for="main-drawer" aria-label={m.nav_open_menu()} class="btn btn-ghost btn-circle size-11">
 			<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
 				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
 			</svg>
@@ -35,14 +47,14 @@
 			class={['btn btn-ghost h-11', page.url.pathname === '/' && CURRENT_ROW]}
 			aria-current={page.url.pathname === '/' ? 'page' : undefined}
 		>
-			Inicio
+			{m.nav_home()}
 		</a>
 		<a
 			href="/historial"
 			class={['btn btn-ghost h-11', page.url.pathname === '/historial' && CURRENT_ROW]}
 			aria-current={page.url.pathname === '/historial' ? 'page' : undefined}
 		>
-			Historial
+			{m.nav_history()}
 		</a>
 	</div>
 
@@ -55,7 +67,7 @@
 	<div class="navbar-end">
 		<div class="relative" data-user-menu>
 			<button
-				aria-label="Cambiar usuario"
+				aria-label={m.nav_switch_user()}
 				class="btn btn-ghost btn-circle size-11 avatar placeholder"
 				onclick={() => (menuOpen = !menuOpen)}
 			>
@@ -66,7 +78,7 @@
 
 			{#if menuOpen}
 				<ul class="absolute right-0 top-full mt-2 menu bg-base-200 rounded-box shadow-lg z-50 w-52 p-2 gap-1">
-					<li class="menu-title text-xs text-base-content/60">Cambiar usuario</li>
+					<li class="menu-title text-xs text-base-content/60">{m.nav_switch_user()}</li>
 					{#each USERS as user}
 						<li>
 							<!-- content-center: the menu row grid stacks from the top otherwise -->
@@ -77,6 +89,21 @@
 							>
 								<span class="badge badge-primary badge-sm font-bold">{user.iniciales}</span>
 								{user.nombre}
+							</button>
+						</li>
+					{/each}
+
+					<!-- The language switch, reachable from every screen -->
+					<li class="menu-title mt-1 text-xs text-base-content/60" data-lang-switch>{m.lang_label()}</li>
+					{#each LANGUAGES as lang}
+						<li data-lang-switch>
+							<button
+								lang={lang.code}
+								class={['min-h-11 content-center', currentLang === lang.code && ['menu-active', CURRENT_ROW]]}
+								aria-current={currentLang === lang.code ? 'true' : undefined}
+								onclick={() => pickLanguage(lang.code)}
+							>
+								{lang.name}
 							</button>
 						</li>
 					{/each}

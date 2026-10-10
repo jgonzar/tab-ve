@@ -1,5 +1,9 @@
 import type { ClientInit } from '@sveltejs/kit';
 import { gateHref } from '$lib/gate';
+import { initClientLanguage } from '$lib/language';
+
+// Before anything renders: messages read the language from <html lang>.
+initClientLanguage();
 
 // Any /api/* call that comes back 401 means the session expired or the
 // signing secret was rotated: send the user to the PIN gate, then back here.

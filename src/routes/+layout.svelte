@@ -10,6 +10,7 @@
 	import UserSelect from '$lib/components/UserSelect.svelte';
 	import PullToRefresh from '$lib/components/PullToRefresh.svelte';
 	import { Toaster } from 'svelte-sileo';
+	import { m } from '$lib/paraglide/messages.js';
 
 	let { children } = $props();
 	let drawerOpen = $state(false);
@@ -67,7 +68,7 @@
 		</div>
 
 		<div class="drawer-side z-40">
-			<label for="main-drawer" aria-label="Cerrar menú" class="drawer-overlay"></label>
+			<label for="main-drawer" aria-label={m.nav_close_menu()} class="drawer-overlay"></label>
 			<Drawer onNavigate={() => (drawerOpen = false)} />
 		</div>
 	</div>
@@ -80,7 +81,7 @@
 		<div
 			class="fixed bottom-0 inset-x-0 z-50 bg-warning text-warning-content text-center text-xs pt-2 pwa-offline-banner font-medium"
 		>
-			Sin conexión — las carreras se guardarán al reconectar
+			{m.offline_banner()}
 		</div>
 	{/if}
 {/if}

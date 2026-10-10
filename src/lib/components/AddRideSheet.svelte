@@ -8,6 +8,7 @@
 	import { networkState } from '$lib/stores/network.svelte';
 	import { pendingStore, type PendingRide } from '$lib/stores/pending.svelte';
 	import { sileo } from 'svelte-sileo';
+	import { m } from '$lib/paraglide/messages.js';
 	import LocationSelect, { type FormLocation } from './LocationSelect.svelte';
 	import LocationChips from './LocationChips.svelte';
 	import type { RideData } from './RideCard.svelte';
@@ -118,28 +119,28 @@
 		resetForm();
 	}
 
-	const FIELD_LABELS: Record<string, string> = {
-		origen: 'Origen',
-		destino: 'Destino',
-		paradas: 'Paradas',
-		precio: 'Precio'
+	const FIELD_LABELS: Record<string, () => string> = {
+		origen: m.sheet_origin,
+		destino: m.sheet_destination,
+		paradas: m.sheet_stops,
+		precio: m.sheet_price
 	};
 
 	const validationSummary = $derived(
 		Object.keys(errors)
 			.filter((k) => k !== 'submit')
-			.map((k) => FIELD_LABELS[k] ?? k)
+			.map((k) => FIELD_LABELS[k]?.() ?? k)
 			.join(', ')
 	);
 
 	function validate(): boolean {
 		const e: Record<string, string> = {};
-		if (!origen) e.origen = 'Requerido';
-		if (!destino) e.destino = 'Requerido';
+		if (!origen) e.origen = m.sheet_required();
+		if (!destino) e.destino = m.sheet_required();
 		const normalizedPrecio = normalizePrecio(precioUsd);
 		if (normalizedPrecio && (isNaN(parseFloat(normalizedPrecio)) || parseFloat(normalizedPrecio) < 0))
-			e.precio = 'Ingresa un precio válido';
-		if (paradas.some((p) => !p.location)) e.paradas = 'Completa todas las paradas';
+			e.precio = m.sheet_invalid_price();
+		if (paradas.some((p) => !p.location)) e.paradas = m.sheet_incomplete_stops();
 		errors = e;
 		return Object.keys(e).length === 0;
 	}
@@ -173,7 +174,7 @@
 		};
 		pendingStore.add(pending);
 		locationCache = null;
-		sileo.success({ title: 'Carrera guardada', description: 'Se enviará cuando vuelva la conexión.' });
+		sileo.success({ title: m.ride_queued(), description: m.ride_queued_note() });
 		close();
 		onSaved?.(pending, true);
 	}
@@ -204,15 +205,15 @@
 
 			if (!res.ok) {
 				const err = await res.json().catch(() => ({}));
-				throw new Error(err.message || 'Error al guardar');
+				throw new Error(err.message || m.sheet_save_error());
 			}
 
 			const viaje = await res.json();
 			locationCache = null;
 			sileo.success(
 				editViaje
-					? { title: 'Carrera actualizada', description: 'Los cambios se guardaron.' }
-					: { title: 'Carrera creada', description: 'Agregada a pendientes.' }
+					? { title: m.sheet_ride_updated(), description: m.sheet_ride_updated_desc() }
+					: { title: m.sheet_ride_created(), description: m.sheet_ride_created_desc() }
 			);
 			close();
 			onSaved?.(viaje);
@@ -221,7 +222,7 @@
 			if (e instanceof TypeError && !editViaje) {
 				queueOffline(payload);
 			} else {
-				errors = { submit: e instanceof Error ? e.message : 'No se pudo guardar la carrera' };
+				errors = { submit: e instanceof Error ? e.message : m.sheet_save_failed() };
 			}
 		} finally {
 			submitting = false;
@@ -234,12 +235,12 @@
 	<div class="modal-box bg-base-200 max-h-[92vh] flex flex-col p-0">
 		<!-- Header -->
 		<div class="flex items-center justify-between px-4 py-3 border-b border-base-300 shrink-0">
-			<h3 class="font-bold text-xl">{editViaje ? 'Editar carrera' : 'Nueva carrera'}</h3>
+			<h3 class="font-bold text-xl">{editViaje ? m.sheet_title_edit() : m.sheet_title_new()}</h3>
 			<button
 				type="button"
 				onclick={close}
 				class="btn btn-circle size-11 bg-base-300 border-none text-base-content hover:bg-base-100"
-				aria-label="Cerrar"
+				aria-label={m.common_close()}
 			>
 				<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
 					<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -256,11 +257,11 @@
 				<!-- Ruta -->
 				<div class="flex flex-col gap-5">
 					<!-- -mb-2: 12px from the heading to its first field -->
-					<label class="-mb-2 text-base font-semibold text-base-content/80">Ruta</label>
+					<label class="-mb-2 text-base font-semibold text-base-content/80">{m.sheet_route()}</label>
 
 					<div class="flex flex-col gap-1.5">
-						<span class="text-sm font-medium text-base-content/80">Origen</span>
-						<LocationSelect bind:value={origen} {locations} placeholder="¿Desde dónde?" />
+						<span class="text-sm font-medium text-base-content/80">{m.sheet_origin()}</span>
+						<LocationSelect bind:value={origen} {locations} placeholder={m.sheet_origin_placeholder()} />
 						<LocationChips value={origen} onSelect={(loc) => (origen = loc)} />
 						{#if errors.origen}
 							<p class="text-error text-sm">{errors.origen}</p>
@@ -269,7 +270,7 @@
 
 					{#each paradas as parada (parada.key)}
 						<div class="flex flex-col gap-1.5">
-							<span class="text-sm font-medium text-base-content/80">Parada</span>
+							<span class="text-sm font-medium text-base-content/80">{m.sheet_stop()}</span>
 							<!-- The remove button sits beside the input only, so the chips
 							     below get the full width and bleed like the other rows.
 							     min-w-0: a flex child defaults to min-width:auto. -->
@@ -278,14 +279,14 @@
 									<LocationSelect
 										bind:value={parada.location}
 										{locations}
-										placeholder="¿Dónde para?"
+										placeholder={m.sheet_stop_placeholder()}
 									/>
 								</div>
 								<button
 									type="button"
 									onclick={() => removeParada(parada.key)}
 									class="btn btn-circle size-11 shrink-0 bg-base-300 border-none text-error hover:bg-error hover:text-error-content"
-									aria-label="Eliminar parada"
+									aria-label={m.sheet_remove_stop()}
 								>
 									<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
 										<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -307,12 +308,12 @@
 						onclick={addParada}
 						class="btn btn-ghost h-11 self-start -my-2 -ml-3 px-3 text-sm text-base-content/60"
 					>
-						+ Agregar parada
+						{m.sheet_add_stop()}
 					</button>
 
 					<div class="flex flex-col gap-1.5">
-						<span class="text-sm font-medium text-base-content/80">Destino</span>
-						<LocationSelect bind:value={destino} {locations} placeholder="¿A dónde?" />
+						<span class="text-sm font-medium text-base-content/80">{m.sheet_destination()}</span>
+						<LocationSelect bind:value={destino} {locations} placeholder={m.sheet_destination_placeholder()} />
 						<LocationChips value={destino} onSelect={(loc) => (destino = loc)} />
 						{#if errors.destino}
 							<p class="text-error text-sm">{errors.destino}</p>
@@ -322,7 +323,7 @@
 
 				<!-- Precio -->
 				<div class="flex flex-col gap-1.5">
-					<label class="text-sm font-medium text-base-content/80">Precio</label>
+					<label class="text-sm font-medium text-base-content/80">{m.sheet_price()}</label>
 					<!-- The prefix comes after the input so it paints on top: DaisyUI's
 					     .input is position: relative and would otherwise cover it. -->
 					<div class="relative">
@@ -344,8 +345,8 @@
 				<!-- Espera (opcional) -->
 				<div class="flex flex-col gap-1.5">
 					<label class="text-sm font-medium text-base-content/80">
-						Tiempo de espera
-						<span class="text-base-content/60 font-normal">(opcional)</span>
+						{m.sheet_wait()}
+						<span class="text-base-content/60 font-normal">{m.common_optional()}</span>
 					</label>
 					<div class="relative">
 						<input
@@ -356,27 +357,27 @@
 							placeholder="0"
 							class="input input-bordered input-lg w-full pr-16"
 						/>
-						<span class="absolute right-3 top-1/2 -translate-y-1/2 text-base-content/60 text-base">min</span>
+						<span class="absolute right-3 top-1/2 -translate-y-1/2 text-base-content/60 text-base">{m.common_unit_min()}</span>
 					</div>
 				</div>
 
 				<!-- Notas (opcional) -->
 				<div class="flex flex-col gap-1.5">
 					<label class="text-sm font-medium text-base-content/80">
-						Notas
-						<span class="text-base-content/60 font-normal">(opcional)</span>
+						{m.sheet_notes()}
+						<span class="text-base-content/60 font-normal">{m.common_optional()}</span>
 					</label>
 					<textarea
 						bind:value={notas}
 						rows="2"
-						placeholder="Algún detalle del viaje..."
+						placeholder={m.sheet_notes_placeholder()}
 						class="textarea textarea-bordered textarea-lg w-full resize-none"
 					></textarea>
 				</div>
 
 				<!-- Fecha -->
 				<div class="flex flex-col gap-1.5">
-					<label for="fecha-viaje" class="text-sm font-medium text-base-content/80">Fecha</label>
+					<label for="fecha-viaje" class="text-sm font-medium text-base-content/80">{m.sheet_date()}</label>
 					<input
 						id="fecha-viaje"
 						type="date"
@@ -391,13 +392,13 @@
 		<!-- Footer actions -->
 		<div class="px-4 pt-3 pwa-sheet-footer border-t border-base-300 shrink-0 space-y-2">
 		{#if validationSummary}
-			<p class="text-error text-sm">Faltan: {validationSummary}</p>
+			<p class="text-error text-sm">{m.sheet_missing({ fields: validationSummary })}</p>
 		{:else if errors.submit}
 			<p class="text-error text-sm">{errors.submit}</p>
 		{/if}
 		<div class="flex gap-2">
 			<button type="button" onclick={close} class="btn btn-ghost h-12 flex-1" disabled={submitting}>
-				Cancelar
+				{m.common_cancel()}
 			</button>
 			<button
 				type="button"
@@ -408,7 +409,7 @@
 				{#if submitting}
 					<span class="loading loading-spinner loading-sm"></span>
 				{:else}
-					{editViaje ? 'Guardar cambios' : 'Guardar carrera'}
+					{editViaje ? m.sheet_save_changes() : m.sheet_save_ride()}
 				{/if}
 			</button>
 		</div>
@@ -417,6 +418,6 @@
 
 	<!-- Backdrop -->
 	<div class="modal-backdrop" role="none">
-		<button type="button" onclick={close}>cerrar</button>
+		<button type="button" onclick={close}>{m.common_close_backdrop()}</button>
 	</div>
 </div>

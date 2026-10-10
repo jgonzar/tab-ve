@@ -1,15 +1,17 @@
 <script lang="ts">
+	import { m } from '$lib/paraglide/messages.js';
+
 	export type FormLocation = { id: number | null; nombre: string };
 	type Location = { id: number; nombre: string };
 
 	let {
 		value = $bindable<FormLocation | null>(null),
 		locations,
-		placeholder = 'Buscar ubicación...'
+		placeholder
 	}: {
 		value: FormLocation | null;
 		locations: Location[];
-		placeholder?: string;
+		placeholder: string;
 	} = $props();
 
 	let inputValue = $state(value?.nombre ?? '');
@@ -86,7 +88,7 @@
 						onclick={createNew}
 						class="w-full text-left px-4 py-3.5 hover:bg-base-300 text-base text-info font-medium"
 					>
-						+ Crear "{inputValue.trim()}"
+						{m.sheet_create_location({ name: inputValue.trim() })}
 					</button>
 				</li>
 			{/if}

@@ -8,6 +8,8 @@
 	import { onDestroy, tick } from 'svelte';
 	import { DEFAULT_CLIENT_IDS } from '$lib/rideDefaults';
 	import { USERS } from '$lib/stores/user.svelte';
+	import { m } from '$lib/paraglide/messages.js';
+	import { formatDayAndTime } from '$lib/format';
 
 	/**
 	 * The quick-ride confirmation: a card with a header tab (the Tab
@@ -29,15 +31,15 @@
 	type Tail = 'confirm' | 'none' | 'queued' | 'error';
 
 	const TITLES: Record<Phase, string> = {
-		confirm: '¿Registrar esta carrera?',
-		saving: 'Registrando…',
-		success: 'Carrera registrada',
-		queued: 'Carrera guardada',
-		error: 'No se pudo registrar'
+		confirm: m.quick_title_confirm(),
+		saving: m.quick_title_saving(),
+		success: m.quick_title_success(),
+		queued: m.ride_queued(),
+		error: m.quick_title_error()
 	};
 	const NOTES = {
-		queued: 'Se enviará cuando vuelva la conexión.',
-		error: 'Revisa tu conexión e intenta de nuevo.'
+		queued: m.ride_queued_note(),
+		error: m.common_check_connection()
 	};
 
 	// Timings (ms)
@@ -62,14 +64,13 @@
 	const clients = DEFAULT_CLIENT_IDS.map((id) => USERS.find((u) => u.id === id)).filter(
 		(u) => u !== undefined
 	);
-	const hora = new Intl.DateTimeFormat('es-VE', { hour: 'numeric', minute: '2-digit' });
 	const titleId = 'quick-ride-title';
 
 	let route = $state<QuickRoute | null>(null);
 	let phase = $state<Phase>('confirm');
 	let tail = $state<Tail>('confirm');
 	let top = $state(0);
-	let time = $state('');
+	let when = $state('');
 	let announcement = $state('');
 	let arcW = $state(0);
 	let reduced = $state(false); // prefers-reduced-motion, read on open
@@ -114,7 +115,7 @@
 		phase = 'confirm';
 		tail = 'confirm';
 		announcement = '';
-		time = hora.format(new Date());
+		when = formatDayAndTime(new Date());
 		route = r;
 		await tick();
 
@@ -386,7 +387,7 @@
 								<span class="badge badge-primary badge-sm">{cliente.nombre}</span>
 							{/each}
 						</div>
-						<span class="text-xs whitespace-nowrap text-base-content/60">Hoy · {time}</span>
+						<span class="text-xs whitespace-nowrap text-base-content/60">{when}</span>
 					</div>
 
 					<!-- Route: the badges and the arc on their own row, the names below -->
@@ -405,18 +406,18 @@
 								</svg>
 							{/if}
 							{#if stops.length}
-								<span class="absolute top-2.5 left-1/2 -translate-x-1/2 text-xs whitespace-nowrap text-base-content/60">vía {stops.join(', ')}</span>
+								<span class="absolute top-2.5 left-1/2 -translate-x-1/2 text-xs whitespace-nowrap text-base-content/60">{m.quick_via({ stops: stops.join(', ') })}</span>
 							{/if}
 						</span>
 						{@render arrow('M7 7l10 10M17 9v8H9')}
 					</div>
 					<div class="mt-1.5 flex items-start justify-between gap-3">
 						<div class="min-w-0">
-							<p class="text-xs text-base-content/60">Desde</p>
+							<p class="text-xs text-base-content/60">{m.quick_from()}</p>
 							<p class="text-[21px] leading-[1.15] font-bold">{route.origen}</p>
 						</div>
 						<div class="min-w-0 text-right">
-							<p class="text-xs text-base-content/60">Hasta</p>
+							<p class="text-xs text-base-content/60">{m.quick_to()}</p>
 							<p class="text-[21px] leading-[1.15] font-bold">{route.destino}</p>
 						</div>
 					</div>
@@ -435,9 +436,9 @@
 									class="btn btn-accent mt-5 h-11 w-full"
 									onclick={register}
 								>
-									{tail === 'error' ? 'Reintentar' : 'Registrar carrera'}
+									{tail === 'error' ? m.quick_retry() : m.quick_register()}
 								</button>
-								<button class="btn btn-ghost mt-1 -mb-3 h-11 w-full text-base-content/80" onclick={close}>Cancelar</button>
+								<button class="btn btn-ghost mt-1 -mb-3 h-11 w-full text-base-content/80" onclick={close}>{m.common_cancel()}</button>
 							{/if}
 						</div>
 					{/if}
