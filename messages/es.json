@@ -37,7 +37,7 @@
 	"nav_history": "Historial",
 	"nav_switch_user": "Cambiar usuario",
 
-	"offline_banner": "Sin conexión — las carreras se guardarán al reconectar",
+	"offline_banner": "Sin conexión. Las carreras se guardarán al reconectar.",
 
 	"pull_hint": "Desliza para actualizar",
 	"pull_release": "Suelta para actualizar",
@@ -140,7 +140,7 @@
 	"history_paid_empty": "No hay carreras pagadas",
 	"history_trash_empty": "No hay carreras eliminadas",
 
-	"receipt_heading": "Carreras pendientes — {date}",
+	"receipt_heading": "Carreras pendientes al {date}",
 	"receipt_footer_one": "{count} carrera  •  Total: {total}",
 	"receipt_footer_other": "{count} carreras  •  Total: {total}",
 
