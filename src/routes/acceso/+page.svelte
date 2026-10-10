@@ -31,10 +31,10 @@
 		if (isPinFormat(pin) && !pending) formEl.requestSubmit();
 	}
 
-	// Nothing to press while a PIN is on its way, or once all 6 digits are in
-	// (they submit themselves). A tap there used to send a second, empty PIN
-	// that wiped whatever was typed next.
-	const locked = $derived(pending || isPinFormat(pin));
+	// Nothing to press while a PIN is on its way, with an empty field, or once
+	// all 6 digits are in (they submit themselves). A tap there used to send a
+	// second, empty PIN that wiped whatever was typed next.
+	const locked = $derived(pending || pin.length === 0 || isPinFormat(pin));
 
 	const submitPin: SubmitFunction = ({ cancel }) => {
 		if (pending) return cancel();
