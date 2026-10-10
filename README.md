@@ -28,7 +28,7 @@ The product requirements, in Spanish, are in [docs/prd.md](docs/prd.md). The app
 * **Messages:** Paraglide JS, compiled with its CLI
 
 ## Application Structure
-* **Navigation:** Top bar with the "tab." wordmark and the active user's avatar; a side drawer for routing.
+* **Navigation:** one side drawer holds everything: Inicio and Historial at the top; the language row and the active user's tile (with "Cambiar", back to "¿Quién eres?") pinned to the bottom. On phones and tablets a top bar with ☰ and the centred "tab." wordmark opens it; from 1024px (`lg`) it stays open as a sidebar and the top bar goes away.
 * **Home (Inicio):** Quick rides, a sticky summary bar (pending count, total in USD and Bs, share and pay-all actions) and the pending ride cards.
 * **History (Historial):** Two tabs: paid rides and the trash.
 
@@ -51,7 +51,7 @@ pnpm dev
 The interface is in Spanish (the base language) and English. Place names, notes and anything else typed into the app are never translated.
 
 * **Which language:** decided on the server for each request. A saved choice (the `tab_lang` cookie) wins. Without one, **the real app always starts in Spanish**, whatever the phone's language, and **the demo follows the browser's `Accept-Language`**. The result goes into `<html lang>`, which is where the client reads it, and is mirrored into `localStorage` (`tab_lang`).
-* **The switch:** the "Idioma / Language" rows in the avatar menu, plus a small ES / EN toggle on the PIN gate and on "¿Quién eres?". It saves the cookie for about 400 days and reloads. `POST /api/language` sets it (behind the PIN like every API route); the gate has no session yet, so it sets the same cookie from the page.
+* **The switch:** the "Idioma / Language" row in the drawer, whose small list offers Español and English, plus a small ES / EN toggle on the PIN gate and on "¿Quién eres?". It saves the cookie for about 400 days and reloads. `POST /api/language` sets it (behind the PIN like every API route); the gate has no session yet, so it sets the same cookie from the page.
 * **Messages** live in `messages/es.json` and `messages/en.json`, with the same keys and `{parameters}` in both. Every visible string is there, API errors included (the server answers in the request's language). Paraglide compiles them into `src/lib/paraglide/` (git-ignored) with `pnpm i18n`. Its Vite plugin segfaults on Node 24, so `vite.config.ts` runs the CLI in a child process instead, before every `vite dev` or `vite build` (and so `vercel build`), and recompiles when a message file changes in dev. `pnpm check` runs `pnpm i18n` itself. A message with markup inside it (a bold amount mid-sentence) goes through `src/lib/rich.ts`, so each language can put its parameters in its own order.
 * **Dates and amounts** go through `src/lib/format.ts`, with a pattern table per language. Spanish keeps the es-VE output it always had ("17 sept. 2026", "Bs. 5.919,42", "Hoy · 3:45 p. m."); English uses en-US ("Sep 17, 2026", "Bs 5,919.42", "Today · 3:45 PM"). Dollars are en-US in both ("$1,234.50").
 * **The shared receipt** follows the interface language.
@@ -83,7 +83,7 @@ The interface is in Spanish (the base language) and English. Place names, notes 
 * **One transaction.** The reset is a single batch over Neon's HTTP driver, guarded by `pg_try_advisory_xact_lock` (HTTP has no sessions, so a session lock would release immediately). Concurrent resets can't both seed, and a failed one changes nothing. The last reset time lives in `demo.reset_state`, a schema of its own the reset creates; `schema.ts` doesn't change and drizzle-kit only manages `public`.
 * **Reiniciar** in the banner (`POST /api/demo/reset`, answered by the hook, so the real app has no such route) asks through the standard confirm dialog, reseeds, and reloads the page. Limits: 5 per IP per hour, and once a minute overall (checked in the database).
 * **Abuse limits:** 30 writes per IP per 10 minutes, then 429 (in memory, per instance); a hard cap of 300 rides, after which the next new ride forces a reset.
-* **People:** `src/lib/demo.ts` tells shared code whether it's the demo (`data-demo="on"` on `<html>`, written by the hook). "¿Quién eres?" and the user menu then show Ana, Luis and Carla, and the API's default `conductor_nombre` is "C". Ride and receipt names come from the database, which only has the demo people.
+* **People:** `src/lib/demo.ts` tells shared code whether it's the demo (`data-demo="on"` on `<html>`, written by the hook). "¿Quién eres?" and the drawer's user tile then show Ana, Luis and Carla, and the API's default `conductor_nombre` is "C". Ride and receipt names come from the database, which only has the demo people.
 * **Migrations:** `drizzle.demo.config.ts` reads only `DEMO_DATABASE_URL` from the process environment and never loads `.env`. Keep the demo URL in a private file outside the repo:
   ```sh
   env $(cat ~/.config/tab/demo.env) pnpm drizzle-kit push --config drizzle.demo.config.ts

@@ -6,7 +6,7 @@
 	/**
 	 * The small ES / EN switch on the first screens (the PIN gate and
 	 * "¿Quién eres?"), pinned to the top corner. In the app itself the switch
-	 * lives in the avatar menu.
+	 * is the language row in the drawer.
 	 */
 	let { from }: { from: 'gate' | 'app' } = $props();
 

@@ -16,8 +16,9 @@
 
 	let { children } = $props();
 	let drawerOpen = $state(false);
-	// The demo's banner sits right under the navbar. Its {#if} is on the same
-	// line as <NavBar />, so the real app's DOM gains no whitespace node.
+	// The demo's banner sits right under the navbar, and at the top of the
+	// content column from lg, where the navbar is hidden. Its {#if} is on the
+	// same line as <NavBar />, so the real app's DOM gains no whitespace node.
 	const demo = demoMode();
 
 	// Static, not $derived: the app is dark-only (data-theme is hardcoded in
@@ -60,7 +61,8 @@
 {:else if !userState.activeUser}
 	<UserSelect />
 {:else}
-	<div class="drawer">
+	<!-- From lg the drawer stays open as a sidebar, beside the content -->
+	<div class="drawer lg:drawer-open">
 		<input id="main-drawer" type="checkbox" class="drawer-toggle" bind:checked={drawerOpen} />
 
 		<div class="drawer-content flex flex-col min-h-screen">
@@ -73,8 +75,8 @@
 		</div>
 
 		<div class="drawer-side z-40">
-			<label for="main-drawer" aria-label={m.nav_close_menu()} class="drawer-overlay"></label>
-			<Drawer onNavigate={() => (drawerOpen = false)} />
+			<label for="main-drawer" aria-label={m.nav_close_menu()} class="drawer-overlay lg:hidden"></label>
+			<Drawer onClose={() => (drawerOpen = false)} />
 		</div>
 	</div>
 

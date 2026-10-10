@@ -120,7 +120,7 @@ que describe el código.
 
 - Al abrir la app por primera vez, el usuario ve una pantalla de bienvenida a pantalla completa — "¿Quién eres?" — con tres tarjetas grandes y seleccionables, una por usuario.
 - La selección se persiste en `localStorage` bajo la clave `tab_active_user`.
-- El ícono de avatar en la esquina superior derecha de la barra de navegación muestra las iniciales del usuario activo. Al tocarlo se abre un popover pequeño para cambiar de usuario.
+- El pie del drawer muestra el usuario activo: sus iniciales, su nombre y su rol, con un enlace "Cambiar" que borra la elección y vuelve a "¿Quién eres?". Elegir a otra persona solo cambia las iniciales.
 - Sin contraseñas por persona. La identidad es exclusivamente local al dispositivo. Lo único que se pide es el PIN de la casa, una vez por dispositivo y antes de esta pantalla (Sección 2.3).
 - El usuario activo no cambia cómo se asigna una carrera: toda carrera nueva se asigna a JA + Marcela, con MC como conductora (`src/lib/rideDefaults.ts`, ver Sección 1.5).
 
@@ -374,18 +374,23 @@ DaisyUI provee los componentes base (botones, tarjetas, drawers, badges, modales
 ### 5.3 Estructura de Navegación
 
 ```
-Barra de navegación superior
+Barra de navegación superior (menos de 1024 px)
 ├── Izquierda: Hamburguesa → Drawer lateral
 ├── Centro:    Wordmark "tab." (SVG)
-└── Derecha:   Chip de avatar (iniciales del usuario) → Popover cambio de usuario
+└── Derecha:   vacío (mismo ancho que la hamburguesa)
 
-Drawer lateral (encabezado: wordmark "tab.")
-├── Inicio          (por defecto)
-└── Historial       (pestañas Pagadas y Papelera)
-    [Futuro: Configuración]
+Drawer lateral (un solo menú)
+├── Arriba
+│   ├── Wordmark "tab."
+│   ├── Inicio          (por defecto)
+│   └── Historial       (pestañas Pagadas y Papelera)
+└── Abajo, fijo
+    ├── Idioma: Español / English → lista pequeña hacia arriba
+    ├── Separador
+    └── Usuario activo: iniciales, nombre, rol y "Cambiar" → "¿Quién eres?"
 ```
 
-En pantallas `md` o más anchas no hay hamburguesa: el wordmark y los enlaces Inicio e Historial van a la izquierda de la barra.
+Desde `lg` (1024 px) el drawer queda abierto como barra lateral, sin barra superior ni hamburguesa; el banner de la demo va arriba de la columna de contenido. Entre 768 y 1023 px se comporta como en el teléfono. El pie respeta las zonas seguras (notch e indicador de inicio) en la PWA instalada. Las filas nuevas del pie (el "Recorrido" de F4) van encima de Idioma.
 
 ### 5.4 Inventario de Páginas
 
@@ -473,7 +478,7 @@ La misma estructura, con dos diferencias:
 #### Selección de Usuario (primer lanzamiento)
 
 - Overlay a pantalla completa, tres tarjetas grandes y seleccionables.
-- Se persiste en `localStorage`; no se muestra de nuevo hasta que el usuario toca su avatar para cambiar.
+- Se persiste en `localStorage`; no se muestra de nuevo hasta que el usuario toca "Cambiar" en el pie del drawer.
 
 ### 5.5 Animaciones
 
@@ -486,7 +491,7 @@ Las animaciones deben sentirse nativas a móvil: rápidas, fluidas y con propós
 | Abrir / cerrar el bottom sheet | Slide up desde la parte inferior de la pantalla (~280 ms) |
 | Abrir / cerrar el drawer lateral | Slide in desde la izquierda (~220 ms) |
 | Toast de éxito / error | Fade in desde la parte superior + auto-dismiss (~2 s) |
-| Cambio de usuario | Fade cruzado suave del avatar (~150 ms) |
+| Lista de idiomas del drawer | Fade y desplazamiento corto hacia arriba (~150 ms) |
 
 Todas las animaciones deben respetar `prefers-reduced-motion` (reducir a crossfade instantáneo o sin animación).
 
@@ -495,7 +500,7 @@ Todas las animaciones deben respetar `prefers-reduced-motion` (reducir a crossfa
 La interfaz está en **español** (el idioma base) y en **inglés**. Los datos nunca se traducen.
 
 - **Cuál se usa:** el servidor lo decide en cada petición. Primero, una elección guardada (la cookie `tab_lang`). Sin ella, **la app real siempre empieza en español**, aunque el teléfono esté en inglés, y **la demo** (`DEMO_MODE=on`) sigue el `Accept-Language` del navegador. El resultado va en `<html lang>`, de donde lo lee el cliente, y se copia a `localStorage` (`tab_lang`).
-- **El cambio:** en el menú del avatar, la sección "Idioma" con "Español" y "English", y un selector pequeño ES / EN en `/acceso` y en "¿Quién eres?". Guarda la cookie (unos 400 días) y recarga la página. `POST /api/language` guarda la cookie y está detrás del PIN, como toda la API; en `/acceso` todavía no hay sesión, así que la pantalla guarda la misma cookie desde el navegador. Sin cambios en la base de datos.
+- **El cambio:** la fila "Idioma" del drawer, que abre una lista pequeña con "Español" y "English", y un selector pequeño ES / EN en `/acceso` y en "¿Quién eres?". Guarda la cookie (unos 400 días) y recarga la página. `POST /api/language` guarda la cookie y está detrás del PIN, como toda la API; en `/acceso` todavía no hay sesión, así que la pantalla guarda la misma cookie desde el navegador. Sin cambios en la base de datos.
 - **No se traduce:** nombres de lugares (también en las carreras rápidas), notas, nombres de personas ni nada que haya escrito el usuario.
 - **El recibo** sigue el idioma de la interfaz.
 - **Fechas y números** siguen el idioma, con una tabla de patrones por idioma (`src/lib/format.ts`). El español conserva la salida es-VE de siempre ("17 sept. 2026", "Bs. 5.919,42", "Hoy · 3:45 p. m."). El inglés usa en-US ("Sep 17, 2026", "Bs 5,919.42", "Today · 3:45 PM"). Los dólares usan el formato en-US en ambos ("$1,234.50").

@@ -82,7 +82,7 @@ a,
 	touch-action: manipulation;
 }
 
-/* DaisyUI 5 gives menu rows (the drawer, the user menu) a hover fill on every
+/* DaisyUI 5 gives menu rows (the drawer, its language list) a hover fill on every
    device, unlike its buttons and tabs, which scope hover to (hover: hover).
    On a touch screen :hover stays on the last row tapped and reads as a stuck
    grey pill, so drop the fill where there is no hover. The selector is
@@ -129,6 +129,13 @@ body {
 /* Floating "+" button on Inicio */
 .pwa-fab {
 	bottom: calc(1.5rem + var(--safe-bottom));
+}
+
+/* The drawer, and the sidebar from lg: clears the notch above the wordmark
+   and the home indicator below the user tile */
+.pwa-drawer {
+	padding-top: calc(1rem + var(--safe-top));
+	padding-bottom: calc(1rem + var(--safe-bottom));
 }
 
 /* Offline banner, pinned to the bottom edge */

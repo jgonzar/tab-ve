@@ -21,7 +21,7 @@ const DEMO_PEOPLE: User[] = [
 	{ id: 3, nombre: 'Carla', iniciales: 'C', rol: 'conductora' }
 ];
 
-/** The three people on "¿Quién eres?" and in the user menu. */
+/** The three people on "¿Quién eres?", and the drawer's user tile. */
 export function users(): User[] {
 	return demoMode() ? DEMO_PEOPLE : HOUSEHOLD;
 }
@@ -46,6 +46,14 @@ class UserState {
 		this.activeUser = user;
 		if (typeof window !== 'undefined') {
 			localStorage.setItem(STORAGE_KEY, JSON.stringify(user));
+		}
+	}
+
+	/** Forgets the choice on this device, so "¿Quién eres?" shows again. */
+	clearUser() {
+		this.activeUser = null;
+		if (typeof window !== 'undefined') {
+			localStorage.removeItem(STORAGE_KEY);
 		}
 	}
 }

@@ -5,7 +5,8 @@
 	import { m } from '$lib/paraglide/messages.js';
 
 	/**
-	 * The demo's banner, under the navbar: the data is shared and starts over
+	 * The demo's banner, under the navbar (at the top of the content column
+	 * from lg, where the navbar is hidden): the data is shared and starts over
 	 * every 4 hours, plus Reiniciar. Only rendered when demoMode() (the
 	 * layout checks). Short copy on phones, the long one from md up.
 	 */
