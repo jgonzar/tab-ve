@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { userState, USERS, type User } from '$lib/stores/user.svelte';
+	import { userState, users, type User } from '$lib/stores/user.svelte';
 	import Wordmark from './Wordmark.svelte';
 	import LanguageToggle from './LanguageToggle.svelte';
 	import { m } from '$lib/paraglide/messages.js';
@@ -20,7 +20,7 @@
 	</div>
 
 	<div class="flex flex-col gap-3 w-full max-w-xs">
-		{#each USERS as user}
+		{#each users() as user}
 			<button
 				onclick={() => select(user)}
 				class="card bg-base-200 hover:bg-base-300 active:scale-95 transition-all duration-150 cursor-pointer text-left"

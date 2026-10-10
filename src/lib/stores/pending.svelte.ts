@@ -1,4 +1,4 @@
-import { USERS } from './user.svelte';
+import { users } from './user.svelte';
 
 const STORAGE_KEY = 'tab_pending_rides';
 
@@ -46,7 +46,7 @@ class PendingStore {
 			minutosEspera: ride.minutosEspera ?? null,
 			notas: ride.notas ?? null,
 			clientes: ride.clienteIds
-				.map((id) => USERS.find((u) => u.id === id))
+				.map((id) => users().find((u) => u.id === id))
 				.filter((u) => u !== undefined)
 				.map((u) => ({ id: u!.id, nombre: u!.nombre })),
 			paradas: [

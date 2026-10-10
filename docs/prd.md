@@ -501,6 +501,18 @@ La interfaz está en **español** (el idioma base) y en **inglés**. Los datos n
 - **Fechas y números** siguen el idioma, con una tabla de patrones por idioma (`src/lib/format.ts`). El español conserva la salida es-VE de siempre ("17 sept. 2026", "Bs. 5.919,42", "Hoy · 3:45 p. m."). El inglés usa en-US ("Sep 17, 2026", "Bs 5,919.42", "Today · 3:45 PM"). Los dólares usan el formato en-US en ambos ("$1,234.50").
 - **Los textos** viven en `messages/es.json` y `messages/en.json` (Paraglide JS), con las mismas claves y parámetros. Los errores de la API también: el servidor responde en el idioma de la petición.
 
+### 5.7 Demo pública
+
+Una copia de Tab para que cualquiera la pruebe sin PIN: **`tab-ve-demo.vercel.app`**, un segundo proyecto de Vercel con **su propia base de datos Neon**, que no comparte nada con producción. Es el mismo código con `DEMO_MODE=on`; producción nunca define esa variable, y sin ella nada de lo siguiente se ejecuta.
+
+- **Sin PIN:** `/acceso` redirige a la app.
+- **Datos de ejemplo compartidos:** una sola base para todos los visitantes, con personas neutras: **Ana (A)** y **Luis (L)** como clientes y **Carla (C)** como conductora (`conductor_nombre` = "C"). Los nombres reales nunca aparecen en la demo. La semilla (`src/lib/server/demo/seed.ts`, aparte de `scripts/seed.ts`) carga la lista de lugares de la sección 8 más Fresco Market (todos los lugares de las carreras rápidas) y 14 carreras con horas de pared de Caracas relativas al momento del reinicio: 5 pendientes (con precio, "Sin precio", con una parada, con espera, con nota), 7 pagadas en Historial y 2 en la Papelera. Las notas son datos y no se traducen.
+- **Se reinicia sola cada 4 horas,** sin cron: en una petición de la demo, cada instancia mira la hora del último reinicio como mucho una vez por minuto, y si pasaron más de 4 horas, borra todo y vuelve a sembrar. La tasa BCV en caché se conserva.
+- **El banner,** bajo la barra de navegación (lejos del aviso sin conexión, que va abajo): "Demo compartida. Se reinicia cada 4 horas." en el teléfono, una versión larga en pantallas anchas, y el botón **"Reiniciar"**, que pide confirmación con el diálogo estándar. Al confirmar, la página se recarga con los datos de ejemplo y un aviso "Demo reiniciada". Reiniciar también afecta a quien esté usando la demo en ese momento.
+- **Límites (solo en la demo):** 30 cambios por IP cada 10 minutos (luego 429, "Demasiados cambios seguidos…"); "Reiniciar" 5 veces por IP por hora y una vez por minuto en total; y un tope de 300 carreras: la siguiente carrera nueva fuerza un reinicio (o un 429 "La demo está llena…" si hubo uno hace menos de un minuto). Los límites por IP son en memoria y por instancia; el tope y el minuto entre reinicios se cuentan en la base.
+- **Sin cambios en `schema.ts`:** la hora del último reinicio vive en `demo.reset_state`, un esquema aparte que crea el propio reinicio. Producción nunca lo toca, y `drizzle-kit` solo mira `public`.
+- **La tasa BCV** es la real (`ve.dolarapi.com`), en la caché de la propia base de la demo, como en producción.
+
 ---
 
 ## 6. Arquitectura Técnica
@@ -534,6 +546,7 @@ Producción: `https://tab-ve.vercel.app`.
                          { unpay: true } o { restore: true })
 /api/ubicaciones       → GET (todas las ubicaciones, por nombre)
 /api/tasa-bcv          → GET (devuelve tasa en caché, actualiza si vence)
+/api/demo/reset        → POST, solo con DEMO_MODE=on (lo responde el hook, no hay archivo de ruta); ver 5.7
 ```
 
 Las listas de carreras no pasan por la API: las cargan los `load` del servidor de `/` y `/historial`.

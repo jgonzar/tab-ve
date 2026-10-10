@@ -39,6 +39,20 @@
 
 	"offline_banner": "Sin conexión. Las carreras se guardarán al reconectar.",
 
+	"demo_banner_short": "Demo compartida. Se reinicia cada 4 horas.",
+	"demo_banner_long": "Esta demo tiene datos de ejemplo y la comparten todos los visitantes. Vuelve a empezar cada 4 horas.",
+	"demo_reset_button": "Reiniciar",
+	"demo_reset_confirm_title": "¿Reiniciar la demo?",
+	"demo_reset_confirm_body": "Se borran los cambios de todos y vuelven los datos de ejemplo.",
+	"demo_reset_confirm": "Reiniciar",
+	"demo_reset_done": "Demo reiniciada",
+	"demo_reset_done_desc": "Volvieron los datos de ejemplo.",
+	"demo_reset_failed": "No se pudo reiniciar",
+	"demo_reset_too_soon": "La demo se acaba de reiniciar. Intenta de nuevo en un minuto.",
+	"demo_reset_limited": "Ya la reiniciaste varias veces. Intenta de nuevo más tarde.",
+	"demo_too_many_writes": "Demasiados cambios seguidos. Espera unos minutos e intenta de nuevo.",
+	"demo_full": "La demo está llena. Intenta de nuevo en un minuto.",
+
 	"pull_hint": "Desliza para actualizar",
 	"pull_release": "Suelta para actualizar",
 	"pull_refreshing": "Actualizando…",

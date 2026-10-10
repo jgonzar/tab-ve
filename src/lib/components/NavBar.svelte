@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import { userState, USERS } from '$lib/stores/user.svelte';
+	import { userState, users } from '$lib/stores/user.svelte';
 	import { CURRENT_ROW } from '$lib/current';
 	import Wordmark from './Wordmark.svelte';
 	import { sileo } from 'svelte-sileo';
@@ -79,7 +79,7 @@
 			{#if menuOpen}
 				<ul class="absolute right-0 top-full mt-2 menu bg-base-200 rounded-box shadow-lg z-50 w-52 p-2 gap-1">
 					<li class="menu-title text-xs text-base-content/60">{m.nav_switch_user()}</li>
-					{#each USERS as user}
+					{#each users() as user}
 						<li>
 							<!-- content-center: the menu row grid stacks from the top otherwise -->
 							<button

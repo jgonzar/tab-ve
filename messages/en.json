@@ -39,6 +39,20 @@
 
 	"offline_banner": "Offline. Rides will be saved when you reconnect.",
 
+	"demo_banner_short": "Shared demo. Resets every 4 hours.",
+	"demo_banner_long": "This demo has sample data and every visitor shares it. It starts over every 4 hours.",
+	"demo_reset_button": "Reset",
+	"demo_reset_confirm_title": "Reset the demo?",
+	"demo_reset_confirm_body": "Everyone's changes are cleared and the sample data comes back.",
+	"demo_reset_confirm": "Reset",
+	"demo_reset_done": "Demo reset",
+	"demo_reset_done_desc": "The sample data is back.",
+	"demo_reset_failed": "Couldn't reset the demo",
+	"demo_reset_too_soon": "The demo was just reset. Try again in a minute.",
+	"demo_reset_limited": "You've reset it several times. Try again later.",
+	"demo_too_many_writes": "Too many changes in a row. Wait a few minutes and try again.",
+	"demo_full": "The demo is full. Try again in a minute.",
+
 	"pull_hint": "Pull to refresh",
 	"pull_release": "Release to refresh",
 	"pull_refreshing": "Refreshing…",

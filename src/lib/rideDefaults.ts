@@ -16,3 +16,9 @@ export const DEFAULT_CLIENT_IDS = [1, 2];
 
 /** Matches the `conductor_nombre` column default, so this is only a fallback. */
 export const DEFAULT_CONDUCTOR = 'MC';
+
+/** The demo's driver, Carla (lib/server/demo/seed.ts). */
+export const DEMO_CONDUCTOR = 'C';
+
+/** The API's fallback for `conductor_nombre`; the server passes isDemo(). */
+export const defaultConductor = (demo: boolean) => (demo ? DEMO_CONDUCTOR : DEFAULT_CONDUCTOR);

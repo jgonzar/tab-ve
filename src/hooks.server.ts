@@ -6,6 +6,11 @@ import { SESSION_COOKIE } from '$lib/server/session';
 import { GATE_PATH, gateHref } from '$lib/gate';
 import { resolveLanguage, withLanguage } from '$lib/server/language';
 import { m } from '$lib/paraglide/messages.js';
+import { DEMO_ATTRIBUTE, registerServerDemoCheck } from '$lib/demo';
+import { blockedResponse, demo, RESET_PATH, resetResponse } from '$lib/server/demo';
+
+// Shared code (components, stores) asks lib/demo.ts; on the server it answers with this.
+registerServerDemoCheck(isDemo);
 
 // Reachable without a session: the gate itself (its page, its form POST and
 // its __data.json, which SvelteKit reports under the page's path), plus the
@@ -21,6 +26,29 @@ function isPublic(pathname: string): boolean {
 function isApi(pathname: string): boolean {
 	return pathname === '/api' || pathname.startsWith('/api/');
 }
+
+// The demo deployment only: its abuse limits, the lazy reset and Reiniciar
+// (lib/server/demo), and data-demo="on" on <html> for the client
+// (lib/demo.ts). With DEMO_MODE off this hands the request straight on,
+// untouched.
+const demoMode: Handle = async ({ event, resolve }) => {
+	if (!isDemo()) return resolve(event);
+
+	const block = await demo.guard({
+		method: event.request.method,
+		pathname: event.url.pathname,
+		ip: event.getClientAddress()
+	});
+	if (block) return blockedResponse(block);
+
+	if (event.url.pathname === RESET_PATH && event.request.method === 'POST') {
+		return resetResponse(event);
+	}
+
+	return resolve(event, {
+		transformPageChunk: ({ html }) => html.replace('<html ', `<html ${DEMO_ATTRIBUTE}="on" `)
+	});
+};
 
 // The household PIN gate. Skipped entirely on the demo deployment.
 const gate: Handle = ({ event, resolve }) => {
@@ -65,4 +93,4 @@ const preloadFonts: Handle = ({ event, resolve }) =>
 			type === 'js' || type === 'css' || (type === 'font' && path.endsWith('.woff2'))
 	});
 
-export const handle = sequence(language, gate, preloadFonts);
+export const handle = sequence(language, demoMode, gate, preloadFonts);

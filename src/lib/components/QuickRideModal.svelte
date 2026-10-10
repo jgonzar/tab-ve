@@ -7,7 +7,7 @@
 <script lang="ts">
 	import { onDestroy, tick } from 'svelte';
 	import { DEFAULT_CLIENT_IDS } from '$lib/rideDefaults';
-	import { USERS } from '$lib/stores/user.svelte';
+	import { users } from '$lib/stores/user.svelte';
 	import { m } from '$lib/paraglide/messages.js';
 	import { formatDayAndTime } from '$lib/format';
 
@@ -61,7 +61,7 @@
 	/** The card radius (rounded-3xl): clip-path wipes keep the corners round. */
 	const clip = (bottom: string) => `inset(0px 0px ${bottom} 0px round 24px)`;
 
-	const clients = DEFAULT_CLIENT_IDS.map((id) => USERS.find((u) => u.id === id)).filter(
+	const clients = DEFAULT_CLIENT_IDS.map((id) => users().find((u) => u.id === id)).filter(
 		(u) => u !== undefined
 	);
 	const titleId = 'quick-ride-title';

@@ -4,6 +4,8 @@ import { db } from '$lib/server/db';
 import { viajes, viajeClientes, viajeParadas, ubicaciones } from '$lib/server/schema';
 import { eq, isNull, sql } from 'drizzle-orm';
 import { m } from '$lib/paraglide/messages.js';
+import { isDemo } from '$lib/server/flags';
+import { defaultConductor } from '$lib/rideDefaults';
 
 type FormLoc = { id: number | null; nombre: string };
 
@@ -95,7 +97,7 @@ export const PUT: RequestHandler = async ({ params, request }) => {
 		const [updated] = await db
 			.update(viajes)
 			.set({
-				conductorNombre: conductorNombre || 'MC',
+				conductorNombre: conductorNombre || defaultConductor(isDemo()),
 				precioUsd: precioUsd ? String(precioUsd) : null,
 				minutosEspera: minutosEspera ?? null,
 				notas: notas || null,

@@ -41,6 +41,8 @@ pnpm db:seed           # load the 3 users and 25 starter locations
 pnpm dev
 ```
 
+`pnpm test` runs the unit tests (Vitest). The demo's seed and reset run against PGlite, an in-memory Postgres with the real schema pushed, so the tests never touch a network database.
+
 `pnpm dev`, `pnpm build` and `pnpm check` compile the messages first (see [Languages](#languages)).
 
 `pnpm dev` is behind the PIN gate too. Put a `HOUSEHOLD_PIN_HASH` (from `scripts/hash-pin.ts`, for a local PIN) and a `SESSION_SECRET` in `.env`, or set `DEMO_MODE=on` there to skip the gate.
@@ -72,6 +74,27 @@ The interface is in Spanish (the base language) and English. Place names, notes 
 * **Client:** `src/hooks.client.ts` wraps `fetch`; any `/api/*` 401 sends the user to the gate and back. A 401 is never treated as offline, so queued rides stay queued and sync after the PIN.
 * **Installed PWA:** it has its own cookie jar, so each phone enters the PIN once inside the installed app.
 * **`PUBLIC_DEMO_URL`:** when set, the gate shows "¿Solo quieres probar? Ver demo" linking there.
+
+## Demo
+`tab-ve-demo.vercel.app` is the same code on a second Vercel project with `DEMO_MODE=on` and its own Neon database. Production never sets `DEMO_MODE`, and with it off none of the code below runs (no extra queries, no banner, no demo table).
+
+* **No gate.** `/acceso` redirects into the app.
+* **Shared sample data, reset every 4 hours.** `src/lib/server/demo/` holds it all. On a demo request, each instance reads the last reset time at most once a minute; when it's older than 4 hours (or missing, on a fresh database), it truncates the ride, place and user tables (`RESTART IDENTITY`) and reseeds them (`seed.ts`): Ana and Luis (ids 1 and 2, the default clients), the driver Carla, the public place list plus Fresco Market, and 14 rides at Caracas wall times relative to now covering every state the UI shows. The BCV cache is kept.
+* **One transaction.** The reset is a single batch over Neon's HTTP driver, guarded by `pg_try_advisory_xact_lock` (HTTP has no sessions, so a session lock would release immediately). Concurrent resets can't both seed, and a failed one changes nothing. The last reset time lives in `demo.reset_state`, a schema of its own the reset creates; `schema.ts` doesn't change and drizzle-kit only manages `public`.
+* **Reiniciar** in the banner (`POST /api/demo/reset`, answered by the hook, so the real app has no such route) asks through the standard confirm dialog, reseeds, and reloads the page. Limits: 5 per IP per hour, and once a minute overall (checked in the database).
+* **Abuse limits:** 30 writes per IP per 10 minutes, then 429 (in memory, per instance); a hard cap of 300 rides, after which the next new ride forces a reset.
+* **People:** `src/lib/demo.ts` tells shared code whether it's the demo (`data-demo="on"` on `<html>`, written by the hook). "¿Quién eres?" and the user menu then show Ana, Luis and Carla, and the API's default `conductor_nombre` is "C". Ride and receipt names come from the database, which only has the demo people.
+* **Migrations:** `drizzle.demo.config.ts` reads only `DEMO_DATABASE_URL` from the process environment and never loads `.env`. Keep the demo URL in a private file outside the repo:
+  ```sh
+  env $(cat ~/.config/tab/demo.env) pnpm drizzle-kit push --config drizzle.demo.config.ts
+  ```
+  Print only the host first, and confirm it isn't production's and has no tables.
+* **Deploying the demo:** from a clean export, so the repo's `.vercel` link to production is never rewritten and no local env file uploads:
+  ```sh
+  dir=$(mktemp -d) && git archive <commit> | tar -x -C "$dir" && cd "$dir" && pnpm install --frozen-lockfile
+  VERCEL_ORG_ID=<team> VERCEL_PROJECT_ID=<tab-ve-demo> vercel build --prod && VERCEL_ORG_ID=<team> VERCEL_PROJECT_ID=<tab-ve-demo> vercel deploy --prebuilt --prod
+  ```
+  The demo project's env is `DATABASE_URL` (the demo database, sensitive) and `DEMO_MODE=on`, with no PIN secrets. The first request seeds the database.
 
 ## Deploy
 Deploys are pushed from the Vercel CLI, not from git:

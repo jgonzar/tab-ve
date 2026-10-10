@@ -8,12 +8,17 @@
 	import NavBar from '$lib/components/NavBar.svelte';
 	import Drawer from '$lib/components/Drawer.svelte';
 	import UserSelect from '$lib/components/UserSelect.svelte';
+	import DemoBanner from '$lib/components/DemoBanner.svelte';
+	import { demoMode } from '$lib/demo';
 	import PullToRefresh from '$lib/components/PullToRefresh.svelte';
 	import { Toaster } from 'svelte-sileo';
 	import { m } from '$lib/paraglide/messages.js';
 
 	let { children } = $props();
 	let drawerOpen = $state(false);
+	// The demo's banner sits right under the navbar. Its {#if} is on the same
+	// line as <NavBar />, so the real app's DOM gains no whitespace node.
+	const demo = demoMode();
 
 	// Static, not $derived: the app is dark-only (data-theme is hardcoded in
 	// app.html), so there's exactly one pill to style.
@@ -59,7 +64,7 @@
 		<input id="main-drawer" type="checkbox" class="drawer-toggle" bind:checked={drawerOpen} />
 
 		<div class="drawer-content flex flex-col min-h-screen">
-			<NavBar />
+			<NavBar />{#if demo}<DemoBanner />{/if}
 			<main class="flex-1 p-4 pwa-main-inset w-full max-w-lg mx-auto">
 				<PullToRefresh>
 					{@render children()}
