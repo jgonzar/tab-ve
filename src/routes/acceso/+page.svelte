@@ -1,10 +1,11 @@
 <script lang="ts">
 	import { tick } from 'svelte';
 	import { applyAction, enhance } from '$app/forms';
+	import { page } from '$app/state';
 	import type { SubmitFunction } from '@sveltejs/kit';
 	import Wordmark from '$lib/components/Wordmark.svelte';
 	import LanguageToggle from '$lib/components/LanguageToggle.svelte';
-	import { PIN_LENGTH, PIN_PATTERN, isPinFormat } from '$lib/gate';
+	import { GATE_PATH, PIN_LENGTH, PIN_PATTERN, isPinFormat } from '$lib/gate';
 	import { m } from '$lib/paraglide/messages.js';
 
 	let { data, form } = $props();
@@ -24,11 +25,16 @@
 	// Sent here by a 401 or a cookie that no longer validates; gone after the first try.
 	const notice = $derived(!error && !form && data.expired ? m.gate_expired() : null);
 
-	// The 6th digit submits, so it stays quick. "Entrar" stays for paste and
-	// for assistive tech.
+	// The 6th digit submits, so it stays quick. "Entrar" stays for a partial
+	// PIN and for assistive tech.
 	function onInput() {
 		if (isPinFormat(pin) && !pending) formEl.requestSubmit();
 	}
+
+	// Nothing to press while a PIN is on its way, or once all 6 digits are in
+	// (they submit themselves). A tap there used to send a second, empty PIN
+	// that wiped whatever was typed next.
+	const locked = $derived(pending || isPinFormat(pin));
 
 	const submitPin: SubmitFunction = ({ cancel }) => {
 		if (pending) return cancel();
@@ -37,10 +43,12 @@
 		return async ({ result, update }) => {
 			if (result.type === 'redirect') {
 				// Stay busy while the router moves on to the original page.
-				await applyAction(result);
-				return;
-			}
-			if (result.type === 'error') networkError = true;
+				await applyAction(result).catch(() => {});
+				// Normally the gate is gone by now. If the navigation ended back
+				// here (the session wasn't kept), let the PIN be entered again
+				// instead of spinning forever.
+				if (page.url.pathname !== GATE_PATH) return;
+			} else if (result.type === 'error') networkError = true;
 			else await update();
 			pending = false;
 			pin = '';
@@ -69,6 +77,7 @@
 					bind:this={pinEl}
 					bind:value={pin}
 					oninput={onInput}
+					readonly={pending}
 					id="pin"
 					name="pin"
 					type="password"
@@ -92,7 +101,17 @@
 				</p>
 			</div>
 
-			<button type="submit" class="btn btn-accent h-11 w-full" aria-busy={pending}>
+			<!-- aria-disabled rather than disabled: it stays focusable and keeps the
+			     accent fill (dimmed) instead of DaisyUI's grey disabled style -->
+			<button
+				type="submit"
+				class={['btn btn-accent h-11 w-full transition-opacity duration-150', locked && 'opacity-70 pointer-events-none']}
+				aria-busy={pending}
+				aria-disabled={locked}
+				onclick={(e) => {
+					if (locked) e.preventDefault();
+				}}
+			>
 				{#if pending}<span class="loading loading-spinner loading-sm" aria-hidden="true"></span>{/if}
 				{m.gate_submit()}
 			</button>
