@@ -45,6 +45,7 @@ Deploys are pushed from the Vercel CLI, not from git:
 vercel build --prod && vercel deploy --prebuilt --prod
 ```
 
-* **Why the build runs locally:** `src/lib/server/db.ts` reads `DATABASE_URL` through `$env/static/private`, so it is baked in at build time from the local `.env`. The Vercel project has no environment variables, so a remote build (`vercel --prod`) fails.
+* **`DATABASE_URL` is a runtime env var on the Vercel project** (sensitive, Production environment). `src/lib/server/db.ts` reads it through `$env/dynamic/private` when the first query runs, so it is never baked into the build and the build itself needs no database URL. If it's missing at runtime, every page or API call that queries the database fails with a 500 and the function log says `DATABASE_URL is not set`.
+* **The local `.env` is only for local tooling and dev:** `pnpm dev` (Vite loads it), `drizzle.config.ts` (`db:push`, `db:studio`) and `scripts/seed.ts`. It doesn't affect what gets deployed.
 * **Always run `vercel build` right before `vercel deploy --prebuilt`.** Otherwise whatever is already in `.vercel/output` gets shipped, which may be a stale build.
-* **A preview deploy (the same two commands without `--prod`) uses the production database,** because it bakes in the same `DATABASE_URL`. Any ride created or paid there is real.
+* **A preview deploy (the same two commands without `--prod`) reads the Preview environment's `DATABASE_URL`.** Without one, its database pages fail. If it holds the production value, any ride created or paid there is real.
