@@ -1,5 +1,7 @@
 <script lang="ts">
+	import { goto } from '$app/navigation';
 	import { userState, users, type User } from '$lib/stores/user.svelte';
+	import { TOUR_HREF, offerFirstTour } from '$lib/tour';
 	import Wordmark from './Wordmark.svelte';
 	import LanguageToggle from './LanguageToggle.svelte';
 	import { m } from '$lib/paraglide/messages.js';
@@ -8,6 +10,8 @@
 
 	function select(user: User) {
 		userState.setUser(user);
+		// The demo's first pick on this device opens Inicio with the tour
+		if (offerFirstTour()) goto(TOUR_HREF);
 	}
 </script>
 

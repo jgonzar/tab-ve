@@ -28,7 +28,8 @@ The product requirements, in Spanish, are in [docs/prd.md](docs/prd.md). The app
 * **Messages:** Paraglide JS, compiled with its CLI
 
 ## Application Structure
-* **Navigation:** one side drawer holds everything: Inicio and Historial at the top; the language row and the active user's tile (with "Cambiar", back to "¿Quién eres?") pinned to the bottom. On phones and tablets a top bar with ☰ and the centred "tab." wordmark opens it; from 1024px (`lg`) it stays open as a sidebar and the top bar goes away.
+* **Navigation:** one side drawer holds everything: Inicio and Historial at the top; Recorrido, the language row and the active user's tile (with "Cambiar", back to "¿Quién eres?") pinned to the bottom. On phones and tablets a top bar with ☰ and the centred "tab." wordmark opens it; from 1024px (`lg`) it stays open as a sidebar and the top bar goes away.
+* **Guided tour:** a welcome card, five steps on Inicio (one hands-on: tap a quick route) and a done card, on driver.js loaded only when a tour starts (`src/lib/tour/`). Demo visitors get it once per device after their first pick on "¿Quién eres?"; anyone replays it from the drawer's Recorrido row. Both link to `/?tour=1`, which Inicio drops from the address at once, so nothing is stored and a reload doesn't bring it back. See the PRD, section 5.8.
 * **Home (Inicio):** Quick rides, a sticky summary bar (pending count, total in USD and Bs, share and pay-all actions) and the pending ride cards.
 * **History (Historial):** Two tabs: paid rides and the trash.
 

@@ -17,6 +17,9 @@ importers:
       daisyui:
         specifier: ^5.0.0
         version: 5.5.19
+      driver.js:
+        specifier: 1.8.0
+        version: 1.8.0
       drizzle-orm:
         specifier: ^0.40.0
         version: 0.40.1(@electric-sql/pglite@0.5.8)(@neondatabase/serverless@0.10.4)(@types/pg@8.11.6)(kysely@0.28.17)
@@ -1292,6 +1295,9 @@ packages:
   dotenv@16.6.1:
     resolution: {integrity: sha512-uBq4egWHTcTt33a72vpSG0z3HnPuIl6NqYcTrKEg2azoEyl2hpW0zqlxysq2pK9HlDIHyHyakeYaYnSAwd8bow==}
     engines: {node: '>=12'}
+
+  driver.js@1.8.0:
+    resolution: {integrity: sha512-+8/IO7h1v14IzWh2GP60N7T3PFZweXwdn5e5POuxRSBoCYUojsBxzqawPeXh3YZIibRy7EehYNEyxe7slwwtdg==}
 
   drizzle-kit@0.31.10:
     resolution: {integrity: sha512-7OZcmQUrdGI+DUNNsKBn1aW8qSoKuTH7d0mYgSP8bAzdFzKoovxEFnoGQp2dVs82EOJeYycqRtciopszwUf8bw==}
@@ -2840,6 +2846,8 @@ snapshots:
   devalue@5.8.0: {}
 
   dotenv@16.6.1: {}
+
+  driver.js@1.8.0: {}
 
   drizzle-kit@0.31.10:
     dependencies:

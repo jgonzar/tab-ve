@@ -41,7 +41,7 @@
 	}
 </script>
 
-<div class="card bg-brand-indigo shadow-sm sticky top-16 lg:top-0 z-20 mb-4">
+<div class="card bg-brand-indigo shadow-sm sticky top-16 lg:top-0 z-20 mb-4" data-tour="summary">
 	<div class="card-body p-4 gap-3">
 		<!-- Labels above their values, so both columns share a top edge however
 		     many lines the total stacks under it -->

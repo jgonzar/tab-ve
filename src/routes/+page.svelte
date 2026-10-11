@@ -1,6 +1,7 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
-	import { invalidateAll } from '$app/navigation';
+	import { onMount, untrack } from 'svelte';
+	import { goto, invalidateAll } from '$app/navigation';
+	import { page } from '$app/state';
 	import { fly } from 'svelte/transition';
 	import { cubicIn, cubicOut } from 'svelte/easing';
 	import { pendingStore } from '$lib/stores/pending.svelte';
@@ -12,6 +13,7 @@
 	import QuickRides from '$lib/components/QuickRides.svelte';
 	import { m } from '$lib/paraglide/messages.js';
 	import { formatBs, formatDayMonth, formatLongDate, formatUsd } from '$lib/format';
+	import { TOUR_PARAM, queueTour } from '$lib/tour';
 
 	let { data } = $props();
 	let showSheet = $state(false);
@@ -35,7 +37,26 @@
 			if (pendingStore.rides.length > 0) syncPending();
 		}
 		window.addEventListener('online', handleOnline);
-		return () => window.removeEventListener('online', handleOnline);
+		return () => {
+			window.removeEventListener('online', handleOnline);
+			tourAbort.abort(); // leaving Inicio drops a waiting tour, ends a running one
+		};
+	});
+
+	// The guided tour: arriving with ?tour=1 (the demo's first pick, or
+	// Recorrido in the drawer) queues it, and the parameter leaves the address
+	// at once, so a reload doesn't bring it back. The load doesn't read the
+	// URL, so dropping it refetches nothing.
+	const tourAbort = new AbortController();
+	$effect(() => {
+		const url = page.url;
+		if (url.searchParams.get(TOUR_PARAM) !== '1') return;
+		untrack(() => {
+			const clean = new URL(url);
+			clean.searchParams.delete(TOUR_PARAM);
+			goto(clean.pathname + clean.search + clean.hash, { replaceState: true, noScroll: true, keepFocus: true });
+			queueTour(tourAbort.signal);
+		});
 	});
 
 	async function syncPending() {
@@ -205,6 +226,7 @@
 	onclick={openCreate}
 	class="btn btn-primary btn-circle btn-lg fixed pwa-fab right-4 shadow-lg z-20"
 	aria-label={m.home_add_ride()}
+	data-tour="add"
 >
 	<svg
 		xmlns="http://www.w3.org/2000/svg"

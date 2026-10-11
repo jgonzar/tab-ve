@@ -385,12 +385,13 @@ Drawer lateral (un solo menú)
 │   ├── Inicio          (por defecto)
 │   └── Historial       (pestañas Pagadas y Papelera)
 └── Abajo, fijo
+    ├── Recorrido: repite el recorrido guiado (sección 5.8)
     ├── Idioma: Español / English → lista pequeña hacia arriba
     ├── Separador
     └── Usuario activo: iniciales, nombre, rol y "Cambiar" → "¿Quién eres?"
 ```
 
-Desde `lg` (1024 px) el drawer queda abierto como barra lateral, sin barra superior ni hamburguesa; el banner de la demo va arriba de la columna de contenido. Entre 768 y 1023 px se comporta como en el teléfono. El pie respeta las zonas seguras (notch e indicador de inicio) en la PWA instalada. Las filas nuevas del pie (el "Recorrido" de F4) van encima de Idioma.
+Desde `lg` (1024 px) el drawer queda abierto como barra lateral, sin barra superior ni hamburguesa; el banner de la demo va arriba de la columna de contenido. Entre 768 y 1023 px se comporta como en el teléfono. El pie respeta las zonas seguras (notch e indicador de inicio) en la PWA instalada.
 
 ### 5.4 Inventario de Páginas
 
@@ -492,6 +493,7 @@ Las animaciones deben sentirse nativas a móvil: rápidas, fluidas y con propós
 | Abrir / cerrar el drawer lateral | Slide in desde la izquierda (~220 ms) |
 | Toast de éxito / error | Fade in desde la parte superior + auto-dismiss (~2 s) |
 | Lista de idiomas del drawer | Fade y desplazamiento corto hacia arriba (~150 ms) |
+| Recorrido guiado | El resaltado se desplaza de un paso al siguiente y la tarjeta aparece con fade (~400 ms) |
 
 Todas las animaciones deben respetar `prefers-reduced-motion` (reducir a crossfade instantáneo o sin animación).
 
@@ -517,6 +519,28 @@ Una copia de Tab para que cualquiera la pruebe sin PIN: **`tab-ve-demo.vercel.ap
 - **Límites (solo en la demo):** 30 cambios por IP cada 10 minutos (luego 429, "Demasiados cambios seguidos…"); "Reiniciar" 5 veces por IP por hora y una vez por minuto en total; y un tope de 300 carreras: la siguiente carrera nueva fuerza un reinicio (o un 429 "La demo está llena…" si hubo uno hace menos de un minuto). Los límites por IP son en memoria y por instancia; el tope y el minuto entre reinicios se cuentan en la base.
 - **Sin cambios en `schema.ts`:** la hora del último reinicio vive en `demo.reset_state`, un esquema aparte que crea el propio reinicio. Producción nunca lo toca, y `drizzle-kit` solo mira `public`.
 - **La tasa BCV** es la real (`ve.dolarapi.com`), en la caché de la propia base de la demo, como en producción.
+
+### 5.8 Recorrido guiado
+
+Un recorrido corto por Inicio: una tarjeta de bienvenida, cinco pasos y una tarjeta final. Los textos aprobados están en `messages/*.json` (claves `tour_*`).
+
+| # | Señala | Nota |
+| --- | --- | --- |
+| Bienvenida | Nada (tarjeta centrada) | Empezar / Omitir |
+| 1 | Las carreras rápidas | **Paso práctico:** tocar una abre la tarjeta de carrera rápida; el recorrido se aparta y vuelve en el paso 2 cuando la tarjeta se cierra (Registrar, Cancelar o Escape). Si la tarjeta no llega a abrirse, sigue solo al paso 2 tras 1,5 s. |
+| 2 | La barra de resumen | |
+| 3 | La primera tarjeta de viaje | Sin carreras, tarjeta centrada |
+| 4 | El botón "+" | |
+| 5 | Historial | El ☰ por debajo de 1024 px (Historial está dentro del drawer cerrado); Historial en la barra lateral desde `lg` |
+| Final | Nada (tarjeta centrada) | En la demo añade que los datos son de ejemplo y se reinician cada 4 horas |
+
+- **Quién lo ve:** en la demo, una vez por dispositivo, tras la **primera** elección en "¿Quién eres?" (`localStorage` `tab_tour_offered`; elegir de nuevo con "Cambiar" no lo repite). **Cualquiera, en las dos apps,** lo repite desde la fila **"Recorrido"** del drawer, encima de Idioma. La app real nunca lo inicia sola.
+- **Sin almacenamiento en el servidor:** las dos entradas llevan a `/?tour=1`. Inicio pone el recorrido en cola y quita el parámetro de la dirección en el acto, así que recargar no lo trae de vuelta.
+- **Cuándo empieza:** nunca con un modal, una hoja, el drawer del teléfono (abierto o cerrándose) o la lista de idiomas abiertos; espera a que se cierren. La barra lateral desde `lg` no lo bloquea. En la demo, espera a que el banner esté en pantalla. Al tocar Recorrido en el teléfono, el drawer se cierra primero.
+- **Mecanismo:** driver.js (versión fija), cargado con un import dinámico junto con su CSS solo cuando un recorrido empieza (`src/lib/tour/tour.ts`); nada de eso va en la carga inicial. El disparador, pequeño, está en `src/lib/tour/index.ts`. Cada paso usa el primer elemento `data-tour` visible en pantalla. `QuickRideModal` emite `tab:quick-ride-closed` en `window` al cerrarse, y con eso vuelve el paso práctico.
+- **Aspecto:** superficie `base-200`, esquinas de 16 px, Poppins, "Siguiente" en Lima y "Omitir" / "Atrás" planos, botones de 44 px, y un anillo Lima alrededor de lo resaltado. "Atrás" solo en los pasos 2 a 5. El ✕ ("Cerrar recorrido") es solo para lectores de pantalla y se ve al llegar a él con el teclado.
+- **Toque o ratón:** "Toca" / "Tap" si la entrada principal es táctil (`(hover: none), (pointer: coarse)`), "Haz clic" / "Click" si no.
+- **Accesibilidad:** flechas izquierda y derecha, Escape para salir, los toques sobre el fondo oscuro no hacen nada (salir es explícito), foco visible en los botones, y sin animación con `prefers-reduced-motion`.
 
 ---
 

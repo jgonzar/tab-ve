@@ -5,13 +5,15 @@
 	import { LANGUAGES, switchLanguage } from '$lib/language';
 	import { getLocale } from '$lib/paraglide/runtime.js';
 	import { sileo } from 'svelte-sileo';
+	import { TOUR_HREF } from '$lib/tour';
 	import Wordmark from './Wordmark.svelte';
 	import { m } from '$lib/paraglide/messages.js';
 
 	/**
-	 * The one menu: the pages at the top; the language and the active user
-	 * pinned to the bottom. A slide-in drawer on phones and tablets, and an
-	 * always-open sidebar from lg (the layout's lg:drawer-open).
+	 * The one menu: the pages at the top; Recorrido (the tour), the language
+	 * and the active user pinned to the bottom. A slide-in drawer on phones
+	 * and tablets, and an always-open sidebar from lg (the layout's
+	 * lg:drawer-open).
 	 */
 	let { onClose }: { onClose: () => void } = $props();
 
@@ -92,6 +94,7 @@
 			<a
 				href="/historial"
 				class={['min-h-11 content-center', isHistorial && ['menu-active', CURRENT_ROW]]}
+				data-tour="history"
 				aria-current={isHistorial ? 'page' : undefined}
 				onclick={onClose}
 			>
@@ -103,9 +106,21 @@
 		</li>
 	</ul>
 
-	<!-- Pinned to the bottom. Later rows (F4's Recorrido) go here, as their
-	     own <ul class="menu"> above the language row. -->
+	<!-- Pinned to the bottom -->
 	<div class="mt-auto pt-4">
+		<!-- Replays the guided tour, in both apps. Closing the phone drawer
+		     first: the tour waits until it's shut. -->
+		<ul class="menu w-full px-4 py-0 mb-1">
+			<li>
+				<a href={TOUR_HREF} class="min-h-11 content-center" onclick={onClose}>
+					<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+					</svg>
+					{m.nav_tour()}
+				</a>
+			</li>
+		</ul>
+
 		<!-- The language row and its list. The list sits after the row, so Tab
 		     reaches it next, and opens upwards over the free space. -->
 		<div

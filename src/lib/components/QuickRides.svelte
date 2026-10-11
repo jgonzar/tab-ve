@@ -65,17 +65,21 @@
 
 <!-- -mx-4 px-4: the row scrolls out to the screen edge while the first chip
      stays on the gutter. py-1 leaves room for the focus ring inside the scroll
-     box; -mt-1 and mb-3 pay it back, keeping the 16px gap to the summary bar. -->
-<div class="-mx-4 px-4 -mt-1 py-1 mb-3 flex gap-2 overflow-x-auto no-scrollbar">
-	{#each ROUTES as route}
-		<button
-			class="badge badge-outline border border-base-content/20 h-11 px-4 text-sm shrink-0 cursor-pointer"
-			aria-haspopup="dialog"
-			onclick={(e) => modal.open(route, e.currentTarget)}
-		>
-			{route.label}
-		</button>
-	{/each}
+     box; -mt-1 and mb-3 pay it back, keeping the 16px gap to the summary bar.
+     The wrapper is the tour's anchor: the content column's width, without the
+     bleed. Its child's margins carry through it, so the layout is as before. -->
+<div data-tour="quick-routes">
+	<div class="-mx-4 px-4 -mt-1 py-1 mb-3 flex gap-2 overflow-x-auto no-scrollbar">
+		{#each ROUTES as route}
+			<button
+				class="badge badge-outline border border-base-content/20 h-11 px-4 text-sm shrink-0 cursor-pointer"
+				aria-haspopup="dialog"
+				onclick={(e) => modal.open(route, e.currentTarget)}
+			>
+				{route.label}
+			</button>
+		{/each}
+	</div>
 </div>
 
 <QuickRideModal bind:this={modal} onSubmit={submit} />

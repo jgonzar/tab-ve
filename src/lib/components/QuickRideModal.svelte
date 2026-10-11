@@ -10,6 +10,7 @@
 	import { users } from '$lib/stores/user.svelte';
 	import { m } from '$lib/paraglide/messages.js';
 	import { formatDayAndTime } from '$lib/format';
+	import { QUICK_RIDE_CLOSED } from '$lib/tour';
 
 	/**
 	 * The quick-ride confirmation: a card with a header tab (the Tab
@@ -186,6 +187,8 @@
 		await tick();
 		trigger?.focus({ preventScroll: true });
 		trigger = null;
+		// The tour's hands-on step resumes on this
+		window.dispatchEvent(new CustomEvent(QUICK_RIDE_CLOSED));
 	}
 
 	async function register() {
