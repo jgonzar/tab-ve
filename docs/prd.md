@@ -493,7 +493,7 @@ Las animaciones deben sentirse nativas a móvil: rápidas, fluidas y con propós
 | Abrir / cerrar el drawer lateral | Slide in desde la izquierda (~220 ms) |
 | Toast de éxito / error | Fade in desde la parte superior + auto-dismiss (~2 s) |
 | Lista de idiomas del drawer | Fade y desplazamiento corto hacia arriba (~150 ms) |
-| Recorrido guiado | El resaltado se desplaza de un paso al siguiente y la tarjeta aparece con fade (~400 ms) |
+| Recorrido guiado | La bienvenida aparece con fade y sus pasos suben uno tras otro; el resaltado se desplaza de un paso al siguiente y la tarjeta aparece (~400 ms) con su parte de la barra llenándose; en la tarjeta final los íconos se encienden uno tras otro |
 
 Todas las animaciones deben respetar `prefers-reduced-motion` (reducir a crossfade instantáneo o sin animación).
 
@@ -522,23 +522,26 @@ Una copia de Tab para que cualquiera la pruebe sin PIN: **`tab-ve-demo.vercel.ap
 
 ### 5.8 Recorrido guiado
 
-Un recorrido corto por Inicio: una tarjeta de bienvenida, cinco pasos y una tarjeta final. Los textos aprobados están en `messages/*.json` (claves `tour_*`).
+Un recorrido corto por Inicio, con aspecto de tutorial de bienvenida: una pantalla de bienvenida, cinco pasos y una tarjeta final. Los textos aprobados están en `messages/*.json` (claves `tour_*`).
 
 | # | Señala | Nota |
 | --- | --- | --- |
-| Bienvenida | Nada (tarjeta centrada) | Empezar / Omitir |
+| Bienvenida | Nada (pantalla completa) | La app queda oculta hasta Empezar. Empezar a lo ancho abajo, Omitir debajo |
 | 1 | Las carreras rápidas | **Paso práctico:** tocar una abre la tarjeta de carrera rápida; el recorrido se aparta y vuelve en el paso 2 cuando la tarjeta se cierra (Registrar, Cancelar o Escape). Si la tarjeta no llega a abrirse, sigue solo al paso 2 tras 1,5 s. |
 | 2 | La barra de resumen | |
 | 3 | La primera tarjeta de viaje | Sin carreras, tarjeta centrada |
 | 4 | El botón "+" | |
 | 5 | Historial | El ☰ por debajo de 1024 px (Historial está dentro del drawer cerrado); Historial en la barra lateral desde `lg` |
-| Final | Nada (tarjeta centrada) | En la demo añade que los datos son de ejemplo y se reinician cada 4 horas |
+| Final | Nada (tarjeta centrada sobre la app oscurecida) | En la demo añade que los datos son de ejemplo y se reinician cada 4 horas |
 
 - **Quién lo ve:** en la demo, una vez por dispositivo, tras la **primera** elección en "¿Quién eres?" (`localStorage` `tab_tour_offered`; elegir de nuevo con "Cambiar" no lo repite). **Cualquiera, en las dos apps,** lo repite desde la fila **"Recorrido"** del drawer, encima de Idioma. La app real nunca lo inicia sola.
 - **Sin almacenamiento en el servidor:** las dos entradas llevan a `/?tour=1`. Inicio pone el recorrido en cola y quita el parámetro de la dirección en el acto, así que recargar no lo trae de vuelta.
 - **Cuándo empieza:** nunca con un modal, una hoja, el drawer del teléfono (abierto o cerrándose) o la lista de idiomas abiertos; espera a que se cierren. La barra lateral desde `lg` no lo bloquea. En la demo, espera a que el banner esté en pantalla. Al tocar Recorrido en el teléfono, el drawer se cierra primero.
-- **Mecanismo:** driver.js (versión fija), cargado con un import dinámico junto con su CSS solo cuando un recorrido empieza (`src/lib/tour/tour.ts`); nada de eso va en la carga inicial. El disparador, pequeño, está en `src/lib/tour/index.ts`. Cada paso usa el primer elemento `data-tour` visible en pantalla. `QuickRideModal` emite `tab:quick-ride-closed` en `window` al cerrarse, y con eso vuelve el paso práctico.
-- **Aspecto:** superficie `base-200`, esquinas de 16 px, Poppins, "Siguiente" en Lima y "Omitir" / "Atrás" planos, botones de 44 px, y un anillo Lima alrededor de lo resaltado. "Atrás" solo en los pasos 2 a 5. El ✕ ("Cerrar recorrido") es solo para lectores de pantalla y se ve al llegar a él con el teclado.
+- **Mecanismo:** driver.js (versión fija), cargado con un import dinámico junto con su CSS y la pantalla de bienvenida solo cuando un recorrido empieza (`src/lib/tour/tour.ts`); nada de eso va en la carga inicial. El disparador, pequeño, está en `src/lib/tour/index.ts`. Cada paso usa el primer elemento `data-tour` visible en pantalla. `QuickRideModal` emite `tab:quick-ride-closed` en `window` al cerrarse, y con eso vuelve el paso práctico.
+- **La bienvenida** (`src/lib/tour/Welcome.svelte`) ocupa toda la pantalla, también en escritorio, sobre un degradado de Violeta a `base-100`: el ícono de la app (`/icons/icon-192.png`) flotando con un brillo suave, la línea Lima "Recorrido · 5 pasos" / "Tour · 5 steps", el título y el texto aprobados, y los cinco pasos en una lista numerada, cada uno con su ícono y su título aprobado, que entran uno tras otro. Respeta las zonas seguras. En teléfonos bajos (hasta 640 px de alto, como un iPhone SE) todo baja un tamaño para que la lista y Empezar quepan sin desplazarse; desde 768 px de ancho la columna va centrada. Mientras se ve, la app queda `inert` (fuera del alcance del foco y de los lectores de pantalla) y no se desplaza.
+- **Las tarjetas de los pasos:** superficie `base-200`, esquinas de 16 px, Poppins. Arriba, una barra Lima de cinco partes que se llena paso a paso; luego el ícono del paso (el mismo de la lista de bienvenida) en un recuadro Violeta, junto a "n de 5" y el título. "Siguiente" en Lima, "Omitir" / "Atrás" planos, botones de 46 px. Un anillo Lima rodea lo resaltado; **solo en el paso 1** el anillo respira y un punto Lima late en su esquina. "Atrás" solo en los pasos 2 a 5. El ✕ ("Cerrar recorrido") es solo para lectores de pantalla y se ve al llegar a él con el teclado.
+- **La tarjeta final:** los cinco íconos de los pasos se encienden en Lima uno tras otro y se vuelven ✓; luego el título, el texto y Listo.
+- **Movimiento:** cada entrada se reproduce una vez; solo laten el paso 1 y el ícono de la bienvenida. Con `prefers-reduced-motion` todo aparece en su estado final, sin movimiento.
 - **Toque o ratón:** "Toca" / "Tap" si la entrada principal es táctil (`(hover: none), (pointer: coarse)`), "Haz clic" / "Click" si no.
 - **Accesibilidad:** flechas izquierda y derecha, Escape para salir, los toques sobre el fondo oscuro no hacen nada (salir es explícito), foco visible en los botones, y sin animación con `prefers-reduced-motion`.
 

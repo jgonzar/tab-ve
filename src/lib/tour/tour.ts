@@ -1,18 +1,23 @@
-// The guided tour on Inicio: a welcome card, five steps, a done card. Only
-// ever loaded through queueTour (./index), so driver.js and both stylesheets
-// stay out of the normal bundle.
+// The guided tour on Inicio: a full-screen welcome, five steps, a done
+// card. Only ever loaded through queueTour (./index), so driver.js, the
+// welcome screen and every stylesheet stay out of the normal bundle.
 
+import { mount, unmount } from 'svelte';
 import { driver, type DriveStep, type PopoverDOM } from 'driver.js';
 import 'driver.js/dist/driver.css';
 import './tour.css';
 import { m } from '$lib/paraglide/messages.js';
 import { QUICK_RIDE_CLOSED } from './index';
+import { CHECK, STEP_ICONS, iconSvg } from './icons';
+import Welcome from './Welcome.svelte';
 
-// Step indexes: 0 is the welcome card, 1 to 5 the steps, 6 the done card
-const QUICK = 1; // the hands-on step
-const FIRST_BACK = 2; // Atrás shows on steps 2 to 5
-const LAST_STEP = 5;
-const DONE = 6;
+// driver.js's step indexes: 0 to 4 are steps 1 to 5, 5 the done card. The
+// welcome is a screen of its own, before driver.js starts.
+const QUICK = 0; // the hands-on step 1
+const FIRST_BACK = 1; // Atrás shows on steps 2 to 5
+const LAST_STEP = 4;
+const DONE = 5;
+const STEPS = 5;
 
 /** How long the hands-on step waits for the quick-ride card to show up
  *  after a chip is tapped, before moving on anyway. */
@@ -41,11 +46,13 @@ const anchor = (...selectors: string[]) => () => {
 	return undefined as unknown as Element;
 };
 
-/** The highlight's lime ring: a stroke that follows the hole driver.js cuts
- *  in its overlay, through every move, scroll and resize. */
-function holeOf(d: string | null) {
-	return d ? d.slice(d.indexOf('Z') + 1).trim() : '';
+/** The hole driver.js cuts in its overlay: the part of its path after the
+ *  outer rectangle */
+function holeOf(d: string) {
+	return d.slice(d.indexOf('Z') + 1).trim();
 }
+
+const make = (tag: string, className: string) => Object.assign(document.createElement(tag), { className });
 
 export function startTour({ demo, onEnd }: { demo: boolean; onEnd: () => void }): () => void {
 	// Touch-first screens get "Toca" / "Tap", the rest "Haz clic" / "Click":
@@ -58,32 +65,22 @@ export function startTour({ demo, onEnd }: { demo: boolean; onEnd: () => void })
 	let ended = false;
 	let disarm = () => {};
 	let unwait = () => {};
-	let ring: SVGPathElement | null = null;
+	let marks: SVGSVGElement | null = null; // the overlay the ring was drawn in
 	let ringOn = false;
+	let handsOn = false;
 	let ringWatch: MutationObserver | null = null;
+	let closeWelcome: (fade: boolean) => Promise<void> = async () => {};
+	let begun = false;
 
 	const text = (title: string, body: string) => ({ title: esc(title), description: esc(body) });
-	const step = (n: number) => ({
-		showProgress: true,
-		progressText: esc(m.tour_progress({ n })),
-		nextBtnText: esc(m.tour_next()),
-		prevBtnText: esc(m.tour_back())
-	});
+	const step = () => ({ nextBtnText: esc(m.tour_next()), prevBtnText: esc(m.tour_back()) });
 
 	const steps: DriveStep[] = [
-		{
-			popover: {
-				...text(m.tour_welcome_title(), m.tour_welcome_body()),
-				showButtons: ['next', 'close'],
-				showProgress: false,
-				nextBtnText: esc(m.tour_start())
-			}
-		},
 		{
 			element: anchor('[data-tour="quick-routes"]'),
 			popover: {
 				...text(m.tour_quick_title(), touch ? m.tour_quick_body_touch() : m.tour_quick_body_mouse()),
-				...step(1),
+				...step(),
 				showButtons: ['next', 'close'],
 				side: 'bottom',
 				align: 'center'
@@ -93,7 +90,7 @@ export function startTour({ demo, onEnd }: { demo: boolean; onEnd: () => void })
 			element: anchor('[data-tour="summary"]'),
 			popover: {
 				...text(m.tour_summary_title(), m.tour_summary_body()),
-				...step(2),
+				...step(),
 				side: 'bottom',
 				align: 'center'
 			}
@@ -102,7 +99,7 @@ export function startTour({ demo, onEnd }: { demo: boolean; onEnd: () => void })
 			element: anchor('[data-tour="ride"]'),
 			popover: {
 				...text(m.tour_ride_title(), touch ? m.tour_ride_body_touch() : m.tour_ride_body_mouse()),
-				...step(3),
+				...step(),
 				side: 'bottom',
 				align: 'center'
 			}
@@ -111,7 +108,7 @@ export function startTour({ demo, onEnd }: { demo: boolean; onEnd: () => void })
 			element: anchor('[data-tour="add"]'),
 			popover: {
 				...text(m.tour_add_title(), touch ? m.tour_add_body_touch() : m.tour_add_body_mouse()),
-				...step(4),
+				...step(),
 				side: 'top',
 				align: 'end'
 			}
@@ -121,7 +118,7 @@ export function startTour({ demo, onEnd }: { demo: boolean; onEnd: () => void })
 			element: anchor('[data-tour="history"]', '[data-tour="menu"]'),
 			popover: {
 				...text(m.tour_history_title(), m.tour_history_body()),
-				...step(5),
+				...step(),
 				side: wide ? 'right' : 'bottom',
 				align: 'start'
 			}
@@ -130,8 +127,8 @@ export function startTour({ demo, onEnd }: { demo: boolean; onEnd: () => void })
 			popover: {
 				...text(m.tour_done_title(), demo ? `${m.tour_done_body()} ${m.tour_done_demo()}` : m.tour_done_body()),
 				showButtons: ['next', 'close'],
-				showProgress: false,
-				nextBtnText: esc(m.tour_done())
+				nextBtnText: esc(m.tour_done()),
+				popoverClass: 'tab-tour tab-tour-done'
 			}
 		}
 	];
@@ -144,24 +141,52 @@ export function startTour({ demo, onEnd }: { demo: boolean; onEnd: () => void })
 		if (tour.getConfig().stageRadius !== radius) tour.setConfig({ ...tour.getConfig(), stageRadius: radius });
 	}
 
-	function setRing(on: boolean) {
+	function setRing(on: boolean, quick: boolean) {
 		ringOn = on;
-		if (ring) ring.style.display = on ? '' : 'none';
+		handsOn = quick;
+		marks?.classList.toggle('tab-tour-has-ring', on);
+		marks?.classList.toggle('tab-tour-hands-on', on && quick);
 	}
 
+	/**
+	 * Drawn inside driver.js's overlay, so it follows the hole through every
+	 * move, scroll and change of size: the lime ring on its edge and, for step 1, a
+	 * halo that breathes outwards (clipped to outside the hole, so it never
+	 * covers the chips) and a beacon on the top right corner.
+	 */
 	function ensureRing() {
 		const svg = tour.getState('__overlaySvg') as SVGSVGElement | undefined;
 		const stage = svg?.firstElementChild;
-		if (!svg || !stage || svg.contains(ring)) return;
+		if (!svg || !stage || marks === svg) return;
 		ringWatch?.disconnect();
-		ring = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-		ring.classList.add('tab-tour-ring');
-		svg.append(ring);
-		const copy = () => ring?.setAttribute('d', holeOf(stage.getAttribute('d')));
+		svg.insertAdjacentHTML(
+			'beforeend',
+			'<defs><clipPath id="tab-tour-outside"><path clip-rule="evenodd"/></clipPath></defs>' +
+				'<path class="tab-tour-breath" clip-path="url(#tab-tour-outside)"/>' +
+				'<path class="tab-tour-ring"/>' +
+				'<g class="tab-tour-beacon"><circle class="tab-tour-beacon-halo" r="7"/><circle r="7"/></g>'
+		);
+		const outside = svg.querySelector('#tab-tour-outside path')!;
+		const ring = svg.querySelector<SVGPathElement>('.tab-tour-ring')!;
+		const breath = svg.querySelector('.tab-tour-breath')!;
+		const beacon = svg.querySelector('.tab-tour-beacon')!;
+		const copy = () => {
+			const d = stage.getAttribute('d') ?? '';
+			outside.setAttribute('d', d);
+			ring.setAttribute('d', holeOf(d));
+			breath.setAttribute('d', holeOf(d));
+			try {
+				const box = ring.getBBox();
+				beacon.setAttribute('transform', `translate(${box.x + box.width} ${box.y})`);
+			} catch {
+				// Not laid out yet (hidden): placed on the next change
+			}
+		};
+		marks = svg;
+		setRing(ringOn, handsOn);
 		copy();
 		ringWatch = new MutationObserver(copy);
 		ringWatch.observe(stage, { attributes: true, attributeFilter: ['d'] });
-		setRing(ringOn);
 	}
 
 	/** driver.js moves its marker class from the step it thinks is current, and
@@ -201,6 +226,7 @@ export function startTour({ demo, onEnd }: { demo: boolean; onEnd: () => void })
 		const focused = document.activeElement;
 		tour.destroy();
 		if (focused instanceof HTMLElement && focused.isConnected) focused.focus({ preventScroll: true });
+		marks = null;
 
 		const resume = () => {
 			unwait();
@@ -217,12 +243,55 @@ export function startTour({ demo, onEnd }: { demo: boolean; onEnd: () => void })
 		};
 	}
 
+	/** Steps 1 to 5: the five-part bar, filled up to this step, then the
+	 *  step's icon in a tile beside "n de 5" and the title */
+	function stepHeader(p: PopoverDOM, index: number) {
+		const bar = make('div', 'tab-tour-bar');
+		bar.setAttribute('aria-hidden', 'true');
+		for (let i = 0; i < STEPS; i++) {
+			const segment = make('span', i < index ? 'tab-tour-past' : i === index ? 'tab-tour-now' : '');
+			segment.append(make('span', ''));
+			bar.append(segment);
+		}
+		const head = make('div', 'tab-tour-head');
+		const tile = make('span', 'tab-tour-tile');
+		tile.innerHTML = iconSvg(STEP_ICONS[index], 18);
+		const words = make('div', '');
+		const count = make('p', 'tab-tour-count');
+		count.textContent = m.tour_progress({ n: index + 1 });
+		words.append(count, p.title);
+		head.append(tile, words);
+		p.wrapper.insertBefore(bar, p.description);
+		p.wrapper.insertBefore(head, p.description);
+	}
+
+	/** The done card: the five step icons, which light up lime one after
+	 *  another and turn into checks */
+	function doneHeader(p: PopoverDOM) {
+		const row = make('div', 'tab-tour-checks');
+		row.setAttribute('aria-hidden', 'true');
+		STEP_ICONS.forEach((d, i) => {
+			const tile = make('span', '');
+			tile.style.setProperty('--lit-at', `${300 + i * 180}ms`);
+			const icon = make('span', 'tab-tour-step-icon');
+			icon.innerHTML = iconSvg(d, 17);
+			const tick = make('span', 'tab-tour-tick');
+			tick.innerHTML = iconSvg(CHECK, 18, 3);
+			tile.append(icon, tick);
+			row.append(tile);
+		});
+		p.wrapper.insertBefore(row, p.title);
+	}
+
 	/** The app's buttons in driver.js's popover, plus Omitir, and the ✕ kept
 	 *  for screen readers only. */
 	function restyle(p: PopoverDOM, index: number) {
+		if (index === DONE) doneHeader(p);
+		else stepHeader(p, index);
+
 		for (const b of [p.previousButton, p.nextButton]) {
 			b.classList.remove('driver-popover-footer-btn');
-			b.classList.add('btn', 'h-11', 'min-h-11', 'px-4');
+			b.classList.add('btn', 'min-h-11');
 			// driver.js shows its buttons with display: block; a .btn is inline-flex
 			if (b.style.display === 'block') b.style.display = '';
 		}
@@ -232,7 +301,7 @@ export function startTour({ demo, onEnd }: { demo: boolean; onEnd: () => void })
 		if (index !== DONE) {
 			const skip = document.createElement('button');
 			skip.type = 'button';
-			skip.className = 'btn btn-ghost h-11 min-h-11 px-4 text-base-content/80';
+			skip.className = 'btn btn-ghost min-h-11 text-base-content/80';
 			skip.textContent = m.tour_skip();
 			skip.addEventListener('click', leave);
 			p.footerButtons.prepend(skip);
@@ -252,7 +321,48 @@ export function startTour({ demo, onEnd }: { demo: boolean; onEnd: () => void })
 	 *  first move has finished. */
 	function leave() {
 		if (tour.isActive()) tour.destroy();
+		closeWelcome(false);
 		finish();
+	}
+
+	/**
+	 * The welcome screen, over the whole app: the app is inert (out of reach
+	 * of focus and screen readers) and doesn't scroll until it closes.
+	 * Empezar fades it out and starts the steps; Omitir and Escape leave.
+	 */
+	function openWelcome() {
+		const host = make('div', '');
+		const inerted = [...document.body.children].filter((c): c is HTMLElement => c instanceof HTMLElement && !c.inert);
+		for (const c of inerted) c.inert = true;
+		const root = document.documentElement;
+		const overflow = root.style.overflow;
+		root.style.overflow = 'hidden';
+		document.body.append(host);
+		const screen = mount(Welcome, {
+			target: host,
+			props: {
+				// Once: a tap and an arrow key, or two quick taps, start it once
+				onStart: () => {
+					if (begun) return;
+					begun = true;
+					closeWelcome(true).then(() => ended || tour.drive(0));
+				},
+				onSkip: leave
+			}
+		});
+		closeWelcome = async (fade) => {
+			closeWelcome = async () => {};
+			for (const c of inerted) c.inert = false;
+			root.style.overflow = overflow;
+			const shown = host.firstElementChild;
+			if (fade && !reduced && shown) {
+				await shown
+					.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 200, easing: 'ease-in', fill: 'forwards' })
+					.finished.catch(() => {});
+			}
+			unmount(screen);
+			host.remove();
+		};
 	}
 
 	function finish() {
@@ -290,13 +400,13 @@ export function startTour({ demo, onEnd }: { demo: boolean; onEnd: () => void })
 		},
 		// Everything is set up as a step starts, not when driver.js's move ends:
 		// with animation on, the popover is up and tappable halfway through it
-		onHighlightStarted: (el, _step, { state }) => {
-			dropStale(el);
-			fitHole(el);
-			setRing(!!el);
+		onHighlightStarted: (target, _step, { state }) => {
+			dropStale(target);
+			fitHole(target);
+			setRing(!!target, state.activeIndex === QUICK);
 			// The overlay is drawn on the next frame, the first time round
 			requestAnimationFrame(() => requestAnimationFrame(ensureRing));
-			if (state.activeIndex === QUICK && el) armHandsOn(el);
+			if (state.activeIndex === QUICK && target) armHandsOn(target);
 		},
 		onHighlighted: () => ensureRing(),
 		onDeselected: () => disarm(),
@@ -305,7 +415,7 @@ export function startTour({ demo, onEnd }: { demo: boolean; onEnd: () => void })
 		onDestroyStarted: () => leave()
 	});
 
-	tour.drive(0);
+	openWelcome();
 
 	return () => {
 		if (!ended) leave();

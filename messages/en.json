@@ -55,6 +55,7 @@
 	"demo_too_many_writes": "Too many changes in a row. Wait a few minutes and try again.",
 	"demo_full": "The demo is full. Try again in a minute.",
 
+	"tour_eyebrow": "Tour · 5 steps",
 	"tour_welcome_title": "This is Tab",
 	"tour_welcome_body": "Tab keeps track of the household's rides: who rode, what's owed and what's been paid. Here's a quick look in five steps.",
 	"tour_quick_title": "Quick routes",

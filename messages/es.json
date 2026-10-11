@@ -55,6 +55,7 @@
 	"demo_too_many_writes": "Demasiados cambios seguidos. Espera unos minutos e intenta de nuevo.",
 	"demo_full": "La demo está llena. Intenta de nuevo en un minuto.",
 
+	"tour_eyebrow": "Recorrido · 5 pasos",
 	"tour_welcome_title": "Esto es Tab",
 	"tour_welcome_body": "Tab lleva la cuenta de las carreras de la casa: quién viajó, cuánto se debe y qué ya se pagó. Te lo mostramos en cinco pasos.",
 	"tour_quick_title": "Rutas rápidas",
