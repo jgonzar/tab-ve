@@ -7,6 +7,9 @@ Production: https://tab-ve.vercel.app
 
 The product requirements, in Spanish, are in [docs/prd.md](docs/prd.md). The app was called Yummy Track until the rebrand to Tab on 2026-09-29.
 
+## Try it
+Tab's landing page, **https://tab-ve-site.vercel.app**, shows what the app does, in English and Spanish, and leads to a live demo on shared sample data (it resets every 4 hours). Production itself is private, behind a household PIN.
+
 ## Core Features
 * **Ride Tracking:** Log origin, ordered stops and destination, an optional USD price, wait time, notes and an editable ride date. New locations typed into the search become shared entries.
 * **Quick Rides:** Presets for the most frequent routes. A tap opens a confirmation card with the route, and "Registrar carrera" saves it. The card then shows the result: saved or queued offline (both close on their own), or an error with "Reintentar".
@@ -51,7 +54,7 @@ pnpm dev
 ## Languages
 The interface is in Spanish (the base language) and English. Place names, notes and anything else typed into the app are never translated.
 
-* **Which language:** decided on the server for each request. A saved choice (the `tab_lang` cookie) wins. Without one, **the real app always starts in Spanish**, whatever the phone's language, and **the demo follows the browser's `Accept-Language`**. The result goes into `<html lang>`, which is where the client reads it, and is mirrored into `localStorage` (`tab_lang`).
+* **Which language:** decided on the server for each request. A saved choice (the `tab_lang` cookie) wins. Without one, **the real app always starts in Spanish**, whatever the phone's language, and **the demo follows the browser's `Accept-Language`**. **In the demo only,** a `?lang=es` or `?lang=en` in the address (the landing page's "Try the demo" carries it) wins over both: it saves the cookie and answers 303 to the same address without the param. Any other value is ignored, and the real app never reads the param. The result goes into `<html lang>`, which is where the client reads it, and is mirrored into `localStorage` (`tab_lang`).
 * **The switch:** the "Idioma / Language" row in the drawer, whose small list offers Español and English, plus a small ES / EN toggle on the PIN gate and on "¿Quién eres?". It saves the cookie for about 400 days and reloads. `POST /api/language` sets it (behind the PIN like every API route); the gate has no session yet, so it sets the same cookie from the page.
 * **Messages** live in `messages/es.json` and `messages/en.json`, with the same keys and `{parameters}` in both. Every visible string is there, API errors included (the server answers in the request's language). Paraglide compiles them into `src/lib/paraglide/` (git-ignored) with `pnpm i18n`. Its Vite plugin segfaults on Node 24, so `vite.config.ts` runs the CLI in a child process instead, before every `vite dev` or `vite build` (and so `vercel build`), and recompiles when a message file changes in dev. `pnpm check` runs `pnpm i18n` itself. A message with markup inside it (a bold amount mid-sentence) goes through `src/lib/rich.ts`, so each language can put its parameters in its own order.
 * **Dates and amounts** go through `src/lib/format.ts`, with a pattern table per language. Spanish keeps the es-VE output it always had ("17 sept. 2026", "Bs. 5.919,42", "Hoy · 3:45 p. m."); English uses en-US ("Sep 17, 2026", "Bs 5,919.42", "Today · 3:45 PM"). Dollars are en-US in both ("$1,234.50").
@@ -59,7 +62,7 @@ The interface is in Spanish (the base language) and English. Place names, notes 
 * **Adding a string:** add the key to both files, then use `m.key()` from `$lib/paraglide/messages.js`. Call messages while rendering, never in a module-level constant, or the text freezes in whichever language loaded the module first.
 
 ## Access
-`src/hooks.server.ts` enforces one household PIN on every page and API route. Without a valid session, pages answer 303 to `/acceso?next=<path>` and `/api/*` answers 401 JSON for every method. The gate page, its POST and the static and PWA assets (`/manifest.webmanifest`, `/icons/*`, `/og.png`, `/_app/*`) stay public. With `DEMO_MODE=on` the gate is off entirely.
+`src/hooks.server.ts` enforces one household PIN on every page and API route. Without a valid session, pages answer 303 to `/acceso?next=<path>` and `/api/*` answers 401 JSON for every method. The gate page, its POST and the static and PWA assets (`/manifest.webmanifest`, `/icons/*`, `/og.png`, `/og-demo.png`, `/_app/*`) stay public. With `DEMO_MODE=on` the gate is off entirely.
 
 * **Secrets (runtime, `$env/dynamic/private`):**
   * `HOUSEHOLD_PIN_HASH`: `scrypt:<N>:<r>:<p>:<salt>:<key>` (N=32768, r=8, p=1, 16-byte salt, 32-byte key, base64url). Never the PIN.
@@ -74,7 +77,7 @@ The interface is in Spanish (the base language) and English. Place names, notes 
 * **Brute force:** 5 wrong PINs within 15 minutes from one IP lock that IP out for 15 minutes, and every attempt takes at least 500 ms. It's in memory, per serverless instance: best effort.
 * **Client:** `src/hooks.client.ts` wraps `fetch`; any `/api/*` 401 sends the user to the gate and back. A 401 is never treated as offline, so queued rides stay queued and sync after the PIN.
 * **Installed PWA:** it has its own cookie jar, so each phone enters the PIN once inside the installed app.
-* **`PUBLIC_DEMO_URL`:** when set, the gate shows "¿Solo quieres probar? Ver demo" linking there.
+* **`PUBLIC_SITE_URL`:** when it holds an http(s) URL, the gate shows "¿Solo quieres probar? Ver cómo funciona" ("Just want to try it? See how it works"), linking there in the same tab. Production points it at the landing page in Spanish, `https://tab-ve-site.vercel.app/es/`.
 
 ## Demo
 `tab-ve-demo.vercel.app` is the same code on a second Vercel project with `DEMO_MODE=on` and its own Neon database. Production never sets `DEMO_MODE`, and with it off none of the code below runs (no extra queries, no banner, no demo table).
@@ -85,6 +88,7 @@ The interface is in Spanish (the base language) and English. Place names, notes 
 * **Reiniciar** in the banner (`POST /api/demo/reset`, answered by the hook, so the real app has no such route) asks through the standard confirm dialog, reseeds, and reloads the page. Limits: 5 per IP per hour, and once a minute overall (checked in the database).
 * **Abuse limits:** 30 writes per IP per 10 minutes, then 429 (in memory, per instance); a hard cap of 300 rides, after which the next new ride forces a reset.
 * **People:** `src/lib/demo.ts` tells shared code whether it's the demo (`data-demo="on"` on `<html>`, written by the hook). "¿Quién eres?" and the drawer's user tile then show Ana, Luis and Carla, and the API's default `conductor_nombre` is "C". Ride and receipt names come from the database, which only has the demo people.
+* **Link card:** "Tab · demo", "Sample data, shared by every visitor. Resets every 4 hours.", and `static/og-demo.png` (see [Head and indexing](#head-and-indexing)).
 * **Migrations:** `drizzle.demo.config.ts` reads only `DEMO_DATABASE_URL` from the process environment and never loads `.env`. Keep the demo URL in a private file outside the repo:
   ```sh
   env $(cat ~/.config/tab/demo.env) pnpm drizzle-kit push --config drizzle.demo.config.ts
@@ -96,6 +100,15 @@ The interface is in Spanish (the base language) and English. Place names, notes 
   VERCEL_ORG_ID=<team> VERCEL_PROJECT_ID=<tab-ve-demo> vercel build --prod && VERCEL_ORG_ID=<team> VERCEL_PROJECT_ID=<tab-ve-demo> vercel deploy --prebuilt --prod
   ```
   The demo project's env is `DATABASE_URL` (the demo database, sensitive) and `DEMO_MODE=on`, with no PIN secrets. The first request seeds the database.
+
+## Head and indexing
+The landing page is Tab's public face, so **neither the real app nor the demo is indexed.**
+
+* **The head per deployment:** `src/app.html` holds a `<!-- tab.head -->` placeholder that the `head` handle in `hooks.server.ts` fills from `src/lib/server/head.ts`, by `isDemo()`: the title, description, robots and link-preview tags, with absolute URLs on each deployment's own production origin.
+  * **Real app:** title "Tab", no description, and a plain card: `og:title` "Tab" and the app icon (`/icons/icon-512.png`, `summary`).
+  * **Demo:** "Tab · demo", "Sample data, shared by every visitor. Resets every 4 hours.", and `/og-demo.png` (1200×630, `summary_large_image`).
+* **`noindex, nofollow`** twice: `<meta name="robots">` on every page, and an `X-Robots-Tag` header on every response. The hook sets the header on whatever comes back through it (pages, `/acceso`, `/api/*`, the gate's 401). On Vercel, static files (`static/` and `/_app/*`) are served before the hook runs, and a redirect thrown by a handle (the gate's 303, the demo's `?lang=`) skips it, so `vercel.json` sets the same header for every path.
+* **The cards** are SVG masters in `design/` (`og.svg`, and `og-demo.svg` for the demo), with their text outlined by `design/og-text.py` and rasterised with `sips`. `static/og.png` is the original English card, which the landing page reuses.
 
 ## Deploy
 Deploys are pushed from the Vercel CLI, not from git:

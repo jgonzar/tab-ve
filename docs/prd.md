@@ -132,11 +132,12 @@ La app de producción es pública en internet, así que toda página y toda ruta
 
 - **Pantalla `/acceso`:** el wordmark, "Ingresa el PIN", un campo de PIN y el botón "Entrar". El PIN son **exactamente 6 dígitos**; el sexto dígito envía el formulario solo. Al acertar, vuelve a la página que se había pedido (`?next=`).
 - **Una vez por dispositivo:** al acertar, el servidor deja una cookie `tab_session` firmada (HMAC-SHA256), `httpOnly`, `Secure`, `SameSite=Lax`, que dura unos 400 días. La app instalada en la pantalla de inicio tiene sus propias cookies, así que cada teléfono ingresa el PIN una vez dentro de la app instalada.
-- **Sin sesión válida:** las páginas redirigen (303) a `/acceso`, y `/api/*` responde 401 en JSON para cualquier método. Los recursos estáticos y de la PWA (`/manifest.webmanifest`, `/icons/*`, `/og.png`, `/_app/*`) quedan libres.
+- **Sin sesión válida:** las páginas redirigen (303) a `/acceso`, y `/api/*` responde 401 en JSON para cualquier método. Los recursos estáticos y de la PWA (`/manifest.webmanifest`, `/icons/*`, `/og.png`, `/og-demo.png`, `/_app/*`) quedan libres.
 - **Sesión vencida o revocada:** si una llamada a `/api/*` recibe 401, la app lleva a `/acceso` con el aviso "Tu sesión expiró. Ingresa el PIN de nuevo." y luego regresa. Un 401 no se trata como falta de conexión: no se encola nada nuevo, y lo que ya estaba en la cola se envía después de ingresar el PIN.
 - **Revocar todos los dispositivos:** cambiar `SESSION_SECRET` en Vercel y volver a desplegar. Cambiar el PIN: generar un nuevo `HOUSEHOLD_PIN_HASH` (no cierra sesiones abiertas; para eso, rotar también `SESSION_SECRET`).
 - **Fuerza bruta:** 5 PIN incorrectos en 15 minutos desde una misma IP bloquean esa IP 15 minutos ("Demasiados intentos. Intenta de nuevo en {min} min."), y cada intento tarda al menos 0,5 s. Es en memoria y por instancia: un esfuerzo razonable, no una garantía.
-- **Demo:** con `DEMO_MODE=on` no hay PIN. Si `PUBLIC_DEMO_URL` está definida, la pantalla muestra "¿Solo quieres probar? Ver demo".
+- **Demo:** con `DEMO_MODE=on` no hay PIN.
+- **Página de Tab:** si `PUBLIC_SITE_URL` tiene una URL http(s), la pantalla muestra "¿Solo quieres probar? Ver cómo funciona" (en inglés, "Just want to try it? See how it works"), con un enlace que abre esa página en la misma pestaña. En producción apunta a la página de Tab en español, `https://tab-ve-site.vercel.app/es/`, que lleva a la demo.
 
 ---
 
@@ -501,7 +502,7 @@ Todas las animaciones deben respetar `prefers-reduced-motion` (reducir a crossfa
 
 La interfaz está en **español** (el idioma base) y en **inglés**. Los datos nunca se traducen.
 
-- **Cuál se usa:** el servidor lo decide en cada petición. Primero, una elección guardada (la cookie `tab_lang`). Sin ella, **la app real siempre empieza en español**, aunque el teléfono esté en inglés, y **la demo** (`DEMO_MODE=on`) sigue el `Accept-Language` del navegador. El resultado va en `<html lang>`, de donde lo lee el cliente, y se copia a `localStorage` (`tab_lang`).
+- **Cuál se usa:** el servidor lo decide en cada petición. Primero, una elección guardada (la cookie `tab_lang`). Sin ella, **la app real siempre empieza en español**, aunque el teléfono esté en inglés, y **la demo** (`DEMO_MODE=on`) sigue el `Accept-Language` del navegador. **En la demo,** un `?lang=es` o `?lang=en` en la dirección (el enlace "Try the demo" de la página de Tab lo trae) gana: guarda la cookie y redirige (303) a la misma dirección sin el parámetro. Otro valor se ignora, y la app real ignora el parámetro siempre. El resultado va en `<html lang>`, de donde lo lee el cliente, y se copia a `localStorage` (`tab_lang`).
 - **El cambio:** la fila "Idioma" del drawer, que abre una lista pequeña con "Español" y "English", y un selector pequeño ES / EN en `/acceso` y en "¿Quién eres?". Guarda la cookie (unos 400 días) y recarga la página. `POST /api/language` guarda la cookie y está detrás del PIN, como toda la API; en `/acceso` todavía no hay sesión, así que la pantalla guarda la misma cookie desde el navegador. Sin cambios en la base de datos.
 - **No se traduce:** nombres de lugares (también en las carreras rápidas), notas, nombres de personas ni nada que haya escrito el usuario.
 - **El recibo** sigue el idioma de la interfaz.
@@ -519,6 +520,7 @@ Una copia de Tab para que cualquiera la pruebe sin PIN: **`tab-ve-demo.vercel.ap
 - **Límites (solo en la demo):** 30 cambios por IP cada 10 minutos (luego 429, "Demasiados cambios seguidos…"); "Reiniciar" 5 veces por IP por hora y una vez por minuto en total; y un tope de 300 carreras: la siguiente carrera nueva fuerza un reinicio (o un 429 "La demo está llena…" si hubo uno hace menos de un minuto). Los límites por IP son en memoria y por instancia; el tope y el minuto entre reinicios se cuentan en la base.
 - **Sin cambios en `schema.ts`:** la hora del último reinicio vive en `demo.reset_state`, un esquema aparte que crea el propio reinicio. Producción nunca lo toca, y `drizzle-kit` solo mira `public`.
 - **La tasa BCV** es la real (`ve.dolarapi.com`), en la caché de la propia base de la demo, como en producción.
+- **Buscadores y vistas previas:** ni la demo ni la app real se indexan (`<meta name="robots" content="noindex, nofollow">` y la cabecera `X-Robots-Tag: noindex, nofollow` en toda respuesta); la página pública es la de Tab, `tab-ve-site.vercel.app`. Un enlace a la demo muestra su propia tarjeta, en inglés: "Tab · demo", "Sample data, shared by every visitor. Resets every 4 hours." y `og-demo.png`. Un enlace a la app real muestra una tarjeta simple: "Tab", sin descripción, con el ícono.
 
 ### 5.8 Recorrido guiado
 
