@@ -22,7 +22,7 @@
 	"gate_network_error": "Couldn't verify. Check your connection and try again.",
 	"gate_expired": "Your session expired. Enter the PIN again.",
 	"gate_demo_prompt": "Just want to try it?",
-	"gate_demo_link": "See the demo",
+	"gate_demo_link": "See how it works",
 
 	"lang_label": "Language",
 	"lang_switch_failed": "Couldn't change the language",

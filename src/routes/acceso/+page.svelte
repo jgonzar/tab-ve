@@ -118,10 +118,10 @@
 		</form>
 	</div>
 
-	{#if data.demoUrl}
+	{#if data.siteUrl}
 		<p class="mt-6 flex flex-wrap items-center justify-center gap-x-1 text-sm text-base-content/60">
 			{m.gate_demo_prompt()}
-			<a href={data.demoUrl} class="inline-flex min-h-11 items-center px-1 font-semibold text-accent hover:underline">
+			<a href={data.siteUrl} class="inline-flex min-h-11 items-center px-1 font-semibold text-accent hover:underline">
 				{m.gate_demo_link()}
 			</a>
 		</p>

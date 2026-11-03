@@ -8,9 +8,9 @@ import { createSessionToken, SESSION_COOKIE, SESSION_COOKIE_OPTIONS } from '$lib
 import { ATTEMPT_DELAY_MS, lockoutMinutes, pinLimiter } from '$lib/server/rate-limit';
 import { EXPIRED_PARAM, NEXT_PARAM, isPinFormat, safeNext } from '$lib/gate';
 
-/** The demo link, only when PUBLIC_DEMO_URL holds an http(s) URL (F5 sets it). */
-function demoUrl(): string | null {
-	const raw = publicEnv.PUBLIC_DEMO_URL;
+/** The link to Tab's landing page, only when PUBLIC_SITE_URL holds an http(s) URL. */
+function siteUrl(): string | null {
+	const raw = publicEnv.PUBLIC_SITE_URL;
 	if (!raw) return null;
 	try {
 		const url = new URL(raw);
@@ -25,7 +25,7 @@ export const load: PageServerLoad = ({ url, cookies }) => {
 	if (isDemo() || hasValidSession(cookies)) {
 		redirect(303, safeNext(url.searchParams.get(NEXT_PARAM)));
 	}
-	return { demoUrl: demoUrl(), expired: url.searchParams.has(EXPIRED_PARAM) };
+	return { siteUrl: siteUrl(), expired: url.searchParams.has(EXPIRED_PARAM) };
 };
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));

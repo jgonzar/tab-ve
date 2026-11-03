@@ -22,7 +22,7 @@
 	"gate_network_error": "No se pudo verificar. Revisa tu conexión e intenta de nuevo.",
 	"gate_expired": "Tu sesión expiró. Ingresa el PIN de nuevo.",
 	"gate_demo_prompt": "¿Solo quieres probar?",
-	"gate_demo_link": "Ver demo",
+	"gate_demo_link": "Ver cómo funciona",
 
 	"lang_label": "Idioma",
 	"lang_switch_failed": "No se pudo cambiar el idioma",
