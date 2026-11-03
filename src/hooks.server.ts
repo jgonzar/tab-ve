@@ -4,7 +4,8 @@ import { isDemo } from '$lib/server/flags';
 import { hasValidSession } from '$lib/server/auth';
 import { SESSION_COOKIE } from '$lib/server/session';
 import { GATE_PATH, gateHref } from '$lib/gate';
-import { resolveLanguage, withLanguage } from '$lib/server/language';
+import { resolveLanguage, takeLanguageParam, withLanguage } from '$lib/server/language';
+import { HEAD_PLACEHOLDER, headTags, ROBOTS } from '$lib/server/head';
 import { m } from '$lib/paraglide/messages.js';
 import { DEMO_ATTRIBUTE, registerServerDemoCheck } from '$lib/demo';
 import { blockedResponse, demo, RESET_PATH, resetResponse } from '$lib/server/demo';
@@ -16,7 +17,7 @@ registerServerDemoCheck(isDemo);
 // its __data.json, which SvelteKit reports under the page's path), plus the
 // static and PWA assets. On Vercel the CDN serves static/ before this hook
 // runs; the list keeps the preview server and any fallthrough consistent.
-const PUBLIC_PATHS = new Set([GATE_PATH, '/manifest.webmanifest', '/og.png', '/favicon.ico']);
+const PUBLIC_PATHS = new Set([GATE_PATH, '/manifest.webmanifest', '/og.png', '/og-demo.png', '/favicon.ico']);
 const PUBLIC_PREFIXES = ['/_app/', '/icons/'];
 
 function isPublic(pathname: string): boolean {
@@ -71,10 +72,17 @@ const gate: Handle = ({ event, resolve }) => {
 	redirect(303, gateHref(event.url.pathname + event.url.search, hadCookie));
 };
 
-// Runs first, so everything after it (the gate's 401 included) renders in the
+// Runs before the demo and the gate, so everything after it (the gate's 401 included) renders in the
 // request's language. The page shell gets it in <html lang>, which is also
 // where the client reads it from.
+//
+// The demo reads ?lang= before that (the landing page's "Try the demo" link
+// carries it): it saves the language and sends the visitor to the same
+// address without the param. The real app ignores the param.
 const language: Handle = ({ event, resolve }) => {
+	const cleanPath = takeLanguageParam(event);
+	if (cleanPath) redirect(303, cleanPath);
+
 	const lang = resolveLanguage(event);
 	return withLanguage(lang, event, () =>
 		resolve(event, { transformPageChunk: ({ html }) => html.replace('%lang%', lang) })
@@ -93,4 +101,18 @@ const preloadFonts: Handle = ({ event, resolve }) =>
 			type === 'js' || type === 'css' || (type === 'font' && path.endsWith('.woff2'))
 	});
 
-export const handle = sequence(language, demoMode, gate, preloadFonts);
+// The outermost handle: the deployment's own title, description and link
+// card in every page's head (lib/server/head.ts), and X-Robots-Tag on every
+// response that comes back through here, the gate's 401 included. Static
+// files never reach the hook on Vercel, and a redirect thrown by a later
+// handle (the gate's 303, the demo's ?lang=) skips it, so vercel.json sends
+// the same header for every path.
+const head: Handle = async ({ event, resolve }) => {
+	const response = await resolve(event, {
+		transformPageChunk: ({ html }) => html.replace(HEAD_PLACEHOLDER, headTags(isDemo()))
+	});
+	response.headers.set('X-Robots-Tag', ROBOTS);
+	return response;
+};
+
+export const handle = sequence(head, language, demoMode, gate, preloadFonts);

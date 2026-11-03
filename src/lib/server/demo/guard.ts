@@ -25,7 +25,7 @@ export type ResetPress =
 	| { result: 'limited'; retryAfterMs: number }
 	| { result: 'too-soon'; retryAfterMs: number };
 
-const STATIC_PATHS = new Set(['/manifest.webmanifest', '/og.png', '/favicon.ico']);
+const STATIC_PATHS = new Set(['/manifest.webmanifest', '/og.png', '/og-demo.png', '/favicon.ico']);
 const STATIC_PREFIXES = ['/_app/', '/icons/'];
 
 // The interface-language cookie and Reiniciar (which has its own limit) don't count as edits
