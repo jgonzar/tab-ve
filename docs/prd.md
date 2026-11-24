@@ -12,11 +12,11 @@
 
 ### 1.1 Problema
 
-En Venezuela, JA y Marcela utilizan regularmente a una conductora de confianza, MC, para sus traslados. El seguimiento de las carreras, sus costos y el monto acumulado adeudado se hace actualmente rebuscando mensajes de chat, lo que resulta tedioso y propenso a errores. Los pagos se realizan en lotes, no por viaje, por lo que es fácil perder la cuenta.
+En Venezuela, JA y Rosa utilizan regularmente a una conductora de confianza, C, para sus traslados. El seguimiento de las carreras, sus costos y el monto acumulado adeudado se hace actualmente rebuscando mensajes de chat, lo que resulta tedioso y propenso a errores. Los pagos se realizan en lotes, no por viaje, por lo que es fácil perder la cuenta.
 
 ### 1.2 Solución
 
-Tab es una aplicación web ligera, optimizada para móvil e instalable en la pantalla de inicio (PWA), que permite registrar y dar seguimiento a las carreras con MC. Muestra todos los viajes pendientes de pago en una sola pantalla, permite marcarlos como pagados y presenta los totales tanto en dólares (USD) como en bolívares venezolanos (usando la tasa BCV oficial diaria).
+Tab es una aplicación web ligera, optimizada para móvil e instalable en la pantalla de inicio (PWA), que permite registrar y dar seguimiento a las carreras con C. Muestra todos los viajes pendientes de pago en una sola pantalla, permite marcarlos como pagados y presenta los totales tanto en dólares (USD) como en bolívares venezolanos (usando la tasa BCV oficial diaria).
 
 El nombre describe el trabajo central: llevar una cuenta abierta. Se suman carreras a medida que ocurren, siempre se sabe cuánto se debe y la cuenta se salda en lote al pagar.
 
@@ -50,8 +50,8 @@ existiendo en la base de datos y en la API. Están diferidos, no eliminados.
 
 | Campo | Estado | Por qué |
 |---|---|---|
-| `conductor` | Retirado de formulario y de la tarjeta | Las 107 carreras registradas tienen `MC`. El campo nunca varió, así que mostrarlo y pedirlo era ruido puro. |
-| `clientes` ("Para quién") | Retirado del formulario | Agregaba fricción en cada registro. Toda carrera nueva se asigna a **JA + Marcela**, igual que ya hacía el atajo de rutas frecuentes. |
+| `conductor` | Retirado de formulario y de la tarjeta | Las 107 carreras registradas tienen `C`. El campo nunca varió, así que mostrarlo y pedirlo era ruido puro. |
+| `clientes` ("Para quién") | Retirado del formulario | Agregaba fricción en cada registro. Toda carrera nueva se asigna a **JA + Rosa**, igual que ya hacía el atajo de rutas frecuentes. |
 
 **Qué NO cambió — a propósito:**
 
@@ -111,10 +111,10 @@ que describe el código.
 | Nombre | Iniciales | Rol |
 |---|---|---|
 | JA | JA | Cliente — toma carreras |
-| Marcela | M | Cliente — toma carreras |
-| Maria Carolina | MC | Conductora — realiza los viajes |
+| Rosa | R | Cliente — toma carreras |
+| Carmen | C | Conductora — realiza los viajes |
 
-**Distinción de roles:** JA y Marcela son los **clientes** — las carreras se registran a su nombre. MC es la **conductora** — no es pasajera, pero también puede usar la app para registrar carreras y asignarlas a JA, Marcela o ambos.
+**Distinción de roles:** JA y Rosa son los **clientes** — las carreras se registran a su nombre. C es la **conductora** — no es pasajera, pero también puede usar la app para registrar carreras y asignarlas a JA, Rosa o ambos.
 
 ### 2.2 Modelo de Sesión
 
@@ -122,7 +122,7 @@ que describe el código.
 - La selección se persiste en `localStorage` bajo la clave `tab_active_user`.
 - El pie del drawer muestra el usuario activo: sus iniciales, su nombre y su rol, con un enlace "Cambiar" que borra la elección y vuelve a "¿Quién eres?". Elegir a otra persona solo cambia las iniciales.
 - Sin contraseñas por persona. La identidad es exclusivamente local al dispositivo. Lo único que se pide es el PIN de la casa, una vez por dispositivo y antes de esta pantalla (Sección 2.3).
-- El usuario activo no cambia cómo se asigna una carrera: toda carrera nueva se asigna a JA + Marcela, con MC como conductora (`src/lib/rideDefaults.ts`, ver Sección 1.5).
+- El usuario activo no cambia cómo se asigna una carrera: toda carrera nueva se asigna a JA + Rosa, con C como conductora (`src/lib/rideDefaults.ts`, ver Sección 1.5).
 
 **Justificación:** La app es un registro compartido entre los tres. Identidad local al dispositivo es suficiente.
 
@@ -151,8 +151,8 @@ Un **viaje** (carrera) representa un trayecto desde un origen hasta un destino f
 
 | Campo | Tipo | Notas |
 |---|---|---|
-| `clientes` | Arreglo (1–2) | Quién tomó la carrera: JA, Marcela o ambos |
-| `conductor` | Texto | Nombre del conductor — default "MC"; editable por si cambia |
+| `clientes` | Arreglo (1–2) | Quién tomó la carrera: JA, Rosa o ambos |
+| `conductor` | Texto | Nombre del conductor — default "C"; editable por si cambia |
 | `origen` | Ubicación | Punto de partida |
 | `paradas` | Arreglo de Ubicación | Cero o más paradas intermedias |
 | `destino` | Ubicación | Punto de llegada final |
@@ -248,7 +248,7 @@ La tasa se obtiene del lado del servidor (`src/lib/server/bcv.ts`) para evitar p
 
 ### 3.9 Carreras Rápidas
 
-- Sobre la barra de resumen hay atajos para las rutas más frecuentes (por ejemplo El Rocío → El Limón). Tocar uno abre un modal centrado con forma de tarjeta con pestaña: la pestaña lleva un icono y el título "¿Registrar esta carrera?", y la tarjeta muestra los clientes (JA y Marcela), "Hoy" con la hora, y la ruta con "Desde", "Hasta" y "vía …" para las paradas.
+- Sobre la barra de resumen hay atajos para las rutas más frecuentes (por ejemplo El Rocío → El Limón). Tocar uno abre un modal centrado con forma de tarjeta con pestaña: la pestaña lleva un icono y el título "¿Registrar esta carrera?", y la tarjeta muestra los clientes (JA y Rosa), "Hoy" con la hora, y la ruta con "Desde", "Hasta" y "vía …" para las paradas.
 - "Registrar carrera" crea la carrera sin precio, con la fecha actual y para los dos clientes. "Cancelar", tocar el fondo o Escape cierran el modal sin crear nada.
 - Al pulsar "Registrar carrera" los botones se pliegan y la pestaña muestra "Registrando…" con un indicador de carga. Mientras guarda, el modal no se puede cerrar.
 - **Guardada en el servidor:** el título pasa a "Carrera registrada" con un ✓. El modal se cierra solo a los 1,5 segundos, o antes con un toque en cualquier parte.
@@ -263,8 +263,8 @@ La tasa se obtiene del lado del servidor (`src/lib/server/bcv.ts`) para evitar p
 ```sql
 usuarios
   id           SERIAL PRIMARY KEY
-  nombre       TEXT NOT NULL         -- 'JA' | 'Marcela' | 'Maria Carolina'
-  iniciales    TEXT NOT NULL         -- 'JA' | 'M' | 'MC'
+  nombre       TEXT NOT NULL         -- 'JA' | 'Rosa' | 'Carmen'
+  iniciales    TEXT NOT NULL         -- 'JA' | 'R' | 'C'
   rol          TEXT NOT NULL         -- 'cliente' | 'conductora'
 
 ubicaciones
@@ -276,7 +276,7 @@ viajes
   id           SERIAL PRIMARY KEY
   creado_en    TIMESTAMPTZ NOT NULL DEFAULT now()
   pagado_en    TIMESTAMPTZ           -- NULL = pendiente
-  conductor_nombre TEXT NOT NULL DEFAULT 'MC'
+  conductor_nombre TEXT NOT NULL DEFAULT 'C'
   precio_usd   NUMERIC(10,2) NOT NULL
   minutos_espera INTEGER
   notas        TEXT
@@ -302,7 +302,7 @@ bcv_tasa_cache
 - Cada viaje debe tener al menos 2 paradas (origen + destino, es decir `orden` 0 y 1+).
 - `ubicacion_id` en `viaje_paradas` es NOT NULL — toda ubicación debe existir en la tabla `ubicaciones` antes de guardar la carrera. Si es nueva, se inserta primero.
 - `precio_usd` debe ser > 0.
-- `viaje_clientes` solo puede referenciar usuarios con `rol = 'cliente'` (JA, Marcela). MC no puede ser cliente de una carrera.
+- `viaje_clientes` solo puede referenciar usuarios con `rol = 'cliente'` (JA, Rosa). C no puede ser cliente de una carrera.
 - Cada viaje debe tener al menos 1 cliente asignado.
 
 ---
@@ -418,8 +418,8 @@ La tarjeta es el elemento central de la app. Toda la información relevante de u
 │                                                  │
 │  $12.00                        Bs 440.000,00     │
 │                                                  │
-│  [JA] [M]                           ⏱ 15 min    │
-│  Conductor: MC                                   │
+│  [JA] [R]                           ⏱ 15 min    │
+│  Conductor: C                                   │
 │  "Llevamos medicamentos — espera en farmacia"    │
 │  Hoy · 3:45 PM                                   │
 ├──────────────────────────────────────────────────┤
@@ -435,9 +435,9 @@ La tarjeta es el elemento central de la app. Toda la información relevante de u
 | **Menú ···** | Cabecera, derecha | Toque abre un dropdown con dos opciones: **Editar** y **Eliminar**. Eliminar muestra un modal de confirmación antes de proceder. |
 | **Precio USD** | Cuerpo | `$X.XX` en tipografía grande y negrita — el dato más importante. |
 | **Precio Bs** | Cuerpo | `Bs X.XXX,XX` en texto secundario más pequeño, junto al precio USD. Si la tasa BCV no está disponible se muestra `Bs —`. |
-| **Chips de clientes** | Cuerpo | Chips con las iniciales de quién tomó la carrera: `[JA]`, `[M]`, o ambos. Color de acento para distinguirlos. |
+| **Chips de clientes** | Cuerpo | Chips con las iniciales de quién tomó la carrera: `[JA]`, `[R]`, o ambos. Color de acento para distinguirlos. |
 | **Badge de espera** | Cuerpo | `⏱ Xmin` — visible solo si `minutos_espera > 0`. Alineado a la derecha junto a los chips. |
-| **Conductor** | Cuerpo | `Conductor: MC` — texto secundario pequeño. Si el nombre del conductor es el default "MC" se muestra igual. Solo se vuelve notable si es diferente. |
+| **Conductor** | Cuerpo | `Conductor: C` — texto secundario pequeño. Si el nombre del conductor es el default "C" se muestra igual. Solo se vuelve notable si es diferente. |
 | **Notas** | Cuerpo | Línea en itálica, visible solo si `notas` no está vacío. Se trunca a 2 líneas; toque expande. |
 | **Fecha y hora** | Cuerpo | Formato relativo: "Hoy · 3:45 PM", "Ayer · 11:20 AM", "Lun 5 may · 9:00 AM". |
 | **Botón Marcar como Pagado** | Pie | Botón ancho completo, color de acento primario. Acción optimista — el botón se desactiva y la tarjeta sale con slide-out al confirmar. |
@@ -472,7 +472,7 @@ La misma estructura, con dos diferencias:
 #### Agregar / Editar Viaje (bottom sheet)
 
 - Formulario en una sola pantalla deslizable desde la parte inferior.
-- **Campos:** clientes (chips multi-selección: JA, M), conductor (texto, default "MC"), origen, paradas (agregar/eliminar dinámicamente), destino, precio USD, minutos de espera (opcional), notas (opcional).
+- **Campos:** clientes (chips multi-selección: JA, R), conductor (texto, default "C"), origen, paradas (agregar/eliminar dinámicamente), destino, precio USD, minutos de espera (opcional), notas (opcional).
 - **Ubicaciones:** select con búsqueda sobre la lista común + opción "Otra dirección" → campo de texto libre.
 - La acción **Guardar** es optimista (ver Sección 7).
 - La acción **Cancelar** descarta cambios sin confirmación (el estado no se envió al servidor).

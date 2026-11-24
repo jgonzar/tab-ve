@@ -8,8 +8,8 @@ const db = drizzle(sql);
 
 const seedUsuarios = [
 	{ nombre: 'JA', iniciales: 'JA', rol: 'cliente' },
-	{ nombre: 'Marcela', iniciales: 'M', rol: 'cliente' },
-	{ nombre: 'Maria Carolina', iniciales: 'MC', rol: 'conductora' }
+	{ nombre: 'Rosa', iniciales: 'R', rol: 'cliente' },
+	{ nombre: 'Carmen', iniciales: 'C', rol: 'conductora' }
 ];
 
 const seedUbicaciones = [
